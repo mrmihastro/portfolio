@@ -18,14 +18,31 @@ collections:
           - { label: "Биография / О себе", name: "bio", widget: "markdown" }
           - { label: "Фотография (Аватар)", name: "avatar", widget: "image", required: false }
 
+  # Новая коллекция: Проекты портфолио
+  - name: "projects"
+    label: "Проекты (Портфолио)"
+    folder: "projects"
+    create: true
+    slug: "{{year}}-{{slug}}"
+    format: "json"
+    fields:
+      - { label: "Порядковый номер (1 - верхний)", name: "order", widget: "number", default: 1, value_type: "int" }
+      - { label: "Название проекта", name: "title", widget: "string" }
+      - { label: "Роль / Категория (напр. Саундтрек, Саунд-дизайн)", name: "role", widget: "string", required: false }
+      - { label: "Обложка / Кадр проекта", name: "image", widget: "image" }
+      - { label: "Описание участия в проекте", name: "description", widget: "markdown" }
+      - { label: "Текст на ссылке", name: "link_text", widget: "string", default: "Смотреть проект →" }
+      - { label: "Ссылка на проект (Steam / YouTube / Сайт)", name: "link_url", widget: "string" }
+
+  # Коллекция постов (микроблог / ноты)
   - name: "posts"
-    label: "Публикации"
+    label: "Публикации и Записи"
     folder: "posts"
     create: true
     slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
     format: "json"
     fields:
-      - { label: "Порядковый номер (1 - самый верхний)", name: "order", widget: "number", default: 1, value_type: "int" }
+      - { label: "Порядковый номер", name: "order", widget: "number", default: 1, value_type: "int" }
       - { label: "Заголовок", name: "title", widget: "string" }
       - { label: "Дата публикации", name: "date", widget: "datetime", date_format: "DD.MM.YYYY", time_format: false }
       - { label: "Текст записи (Форматированный)", name: "body", widget: "markdown", required: false }
