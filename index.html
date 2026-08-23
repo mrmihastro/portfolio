@@ -3,87 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Портфолио Композитора</title>
+  <title>Михаил Тарбагаев</title>
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
   <style>
     :root {
-      --bg: #0b0c10;
-      --card-bg: rgba(26, 28, 35, 0.65);
+      --bg: #121316;
+      --card-bg: #1a1b1f;
       --accent: #d4af37;
-      --accent-glow: rgba(212, 175, 55, 0.35);
-      --text: #e8eaed;
-      --text-muted: #9aa0a6;
-      --border: rgba(255, 255, 255, 0.08);
+      --text: #f0f2f5;
+      --text-muted: #9ba1a6;
+      --border: #2d3139;
     }
 
     * { box-sizing: border-box; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       background-color: var(--bg);
       color: var(--text);
       margin: 0;
       line-height: 1.6;
-      overflow-x: hidden;
-      min-height: 100vh;
-      position: relative;
-    }
-
-    /* Фоновые световые пятна */
-    .ambient-glow {
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(120px);
-      z-index: -1;
-      pointer-events: none;
-      opacity: 0.5;
-      animation: float 14s ease-in-out infinite alternate;
-    }
-    .glow-1 {
-      width: 450px;
-      height: 450px;
-      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
-      top: -100px;
-      left: -100px;
-    }
-    .glow-2 {
-      width: 500px;
-      height: 500px;
-      background: radial-gradient(circle, rgba(70, 40, 120, 0.4) 0%, transparent 70%);
-      bottom: -150px;
-      right: -100px;
-      animation-duration: 18s;
-      animation-direction: alternate-reverse;
-    }
-
-    @keyframes float {
-      0% { transform: translate(0, 0) scale(1); }
-      100% { transform: translate(80px, 60px) scale(1.15); }
     }
 
     .container {
-      max-width: 860px;
+      max-width: 880px;
       margin: 0 auto;
-      padding: 3rem 1.5rem;
+      padding: 3rem 1.25rem;
     }
 
-    /* Блок Обо мне / Hero */
+    /* Блок Обо мне */
     .hero-card {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 2rem;
       background: var(--card-bg);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
       border: 1px solid var(--border);
-      border-radius: 20px;
+      border-radius: 12px;
       padding: 2.5rem;
-      margin-bottom: 3.5rem;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-      transform-style: preserve-3d;
-      perspective: 1000px;
-      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.3s ease;
+      margin-bottom: 3rem;
     }
 
     @media (min-width: 640px) {
@@ -94,10 +52,9 @@
     }
 
     .avatar-wrapper {
-      position: relative;
       flex-shrink: 0;
-      width: 150px;
-      height: 150px;
+      width: 140px;
+      height: 140px;
     }
 
     .avatar {
@@ -106,91 +63,100 @@
       border-radius: 50%;
       object-fit: cover;
       border: 2px solid var(--accent);
-      box-shadow: 0 0 25px var(--accent-glow);
     }
 
     .hero-info h1 {
-      margin: 0 0 0.5rem;
+      margin: 0 0 0.4rem;
       font-size: 2rem;
-      letter-spacing: -0.5px;
-      background: linear-gradient(135deg, #ffffff 40%, var(--accent) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: #fff;
+      font-weight: 700;
     }
 
     .hero-info .subtitle {
       color: var(--accent);
       font-size: 0.95rem;
       text-transform: uppercase;
-      letter-spacing: 1.5px;
-      margin-bottom: 1rem;
+      letter-spacing: 1px;
+      margin-bottom: 0.8rem;
       font-weight: 600;
     }
 
     .hero-info .bio {
       color: var(--text-muted);
       margin: 0;
-      font-size: 0.95rem;
+      font-size: 1rem;
     }
 
-    /* Лента публикаций */
+    /* Лента постов */
     .section-title {
-      font-size: 1.3rem;
+      font-size: 1.25rem;
       text-transform: uppercase;
-      letter-spacing: 2px;
+      letter-spacing: 1.5px;
       color: var(--accent);
-      margin-bottom: 2rem;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .section-title::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: linear-gradient(90deg, var(--border), transparent);
+      margin-bottom: 1.5rem;
+      font-weight: 600;
     }
 
     .card {
       background: var(--card-bg);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border-radius: 16px;
+      border-radius: 12px;
       padding: 2rem;
       margin-bottom: 2rem;
       border: 1px solid var(--border);
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
-      transform-style: preserve-3d;
-      perspective: 1000px;
-      transition: transform 0.15s ease-out, border-color 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .card:hover, .hero-card:hover {
-      border-color: rgba(212, 175, 55, 0.3);
-      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6), 0 0 20px var(--accent-glow);
     }
 
     .card h3 {
       margin: 0 0 0.5rem;
       color: #fff;
-      font-size: 1.3rem;
+      font-size: 1.35rem;
     }
 
     .post-date {
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       color: var(--text-muted);
       margin-bottom: 1rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
     }
 
-    iframe, audio, img {
+    .post-body {
+      color: var(--text);
+      margin: 0 0 1.2rem 0;
+    }
+
+    /* Адаптивные медиа-контейнеры */
+    .media-container {
       width: 100%;
+      margin-top: 1rem;
+    }
+
+    /* Окно партитуры MuseScore: высокое вертикальное пространство */
+    .musescore-container iframe {
+      width: 100%;
+      height: 680px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    /* Окно видео YouTube: строгое соотношение 16:9 */
+    .video-container iframe {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      height: auto;
       border: none;
-      border-radius: 10px;
-      margin-top: 1.2rem;
-      background: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+    }
+
+    audio {
+      width: 100%;
+      margin-top: 1rem;
+    }
+
+    img.post-img {
+      width: 100%;
+      max-height: 550px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid var(--border);
     }
 
     .admin-link {
@@ -202,7 +168,6 @@
     .admin-link a {
       color: var(--text-muted);
       text-decoration: none;
-      transition: color 0.2s;
     }
 
     .admin-link a:hover {
@@ -212,13 +177,10 @@
 </head>
 <body>
 
-  <div class="ambient-glow glow-1"></div>
-  <div class="ambient-glow glow-2"></div>
-
   <div class="container">
 
-    <!-- Блок Hero -->
-    <header class="hero-card tilt-element">
+    <!-- Блок "Обо мне" -->
+    <header class="hero-card">
       <div class="avatar-wrapper">
         <img class="avatar" src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&q=80" alt="Фото композитора">
       </div>
@@ -226,14 +188,13 @@
         <h1>Имя Композитора</h1>
         <div class="subtitle">Композитор & Саунд-дизайнер</div>
         <p class="bio">
-          Музыка для кино, видеоигр и театральных постановок. Сочетание академических инструментов с гибридным синтезом.
+          Музыка для кинематографа, видеоигр и мультимедиа. Академическая партитурная запись и интерактивный саунд-дизайн.
         </p>
       </div>
     </header>
 
-    <!-- Секция постов -->
-    <div class="section-title">Избранные работы и дневник</div>
-    <div id="posts-container">Загрузка проектов...</div>
+    <div class="section-title">Публикации и проекты</div>
+    <div id="posts-container">Загрузка записей...</div>
 
     <div class="admin-link">
       <a href="/admin/">Панель управления</a>
@@ -261,7 +222,6 @@
             renderCard(container, post);
           }
         }
-        initTilt();
       } catch (err) {
         container.innerHTML = '<p style="color:var(--text-muted);">Записи загружаются или репозиторий еще настраивается.</p>';
       }
@@ -269,55 +229,39 @@
 
     function renderCard(container, post) {
       let mediaHtml = '';
+      
       if (post.media_type === 'musescore' && post.media_url) {
         let src = post.media_url.includes('src="') ? post.media_url.match(/src="([^"]+)"/)[1] : post.media_url;
-        mediaHtml = `<iframe height="420" src="${src}" allowfullscreen></iframe>`;
+        mediaHtml = `
+          <div class="media-container musescore-container">
+            <iframe src="${src}" allowfullscreen></iframe>
+          </div>
+        `;
       } else if (post.media_type === 'youtube' && post.media_url) {
         let videoId = post.media_url.includes('watch?v=') ? post.media_url.split('watch?v=')[1].split('&')[0] : post.media_url;
         let src = videoId.startsWith('http') ? videoId : `https://www.youtube-nocookie.com/embed/${videoId}`;
-        mediaHtml = `<iframe height="380" src="${src}" allowfullscreen></iframe>`;
+        mediaHtml = `
+          <div class="media-container video-container">
+            <iframe src="${src}" allowfullscreen></iframe>
+          </div>
+        `;
       } else if (post.media_type === 'audio' && post.media_url) {
         mediaHtml = `<audio controls><source src="${post.media_url}" type="audio/mpeg"></audio>`;
       } else if (post.media_type === 'image' && post.media_url) {
-        mediaHtml = `<img src="${post.media_url}" alt="Media content">`;
+        mediaHtml = `<img class="post-img" src="${post.media_url}" alt="Post image">`;
       }
 
       const card = document.createElement('div');
-      card.className = 'card tilt-element';
+      card.className = 'card';
       card.innerHTML = `
         <div class="post-date">${post.date || ''}</div>
         <h3>${post.title}</h3>
-        <p style="color: var(--text-muted); margin:0;">${post.body || ''}</p>
+        ${post.body ? `<p class="post-body">${post.body}</p>` : ''}
         ${mediaHtml}
       `;
       container.appendChild(card);
     }
 
-    // 3D Tilt эффект при движении курсора
-    function initTilt() {
-      const elements = document.querySelectorAll('.tilt-element');
-      
-      elements.forEach(el => {
-        el.addEventListener('mousemove', (e) => {
-          const rect = el.getBoundingClientRect();
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
-          const centerX = rect.width / 2;
-          const centerY = rect.height / 2;
-          
-          const rotateX = ((y - centerY) / centerY) * -7;
-          const rotateY = ((x - centerX) / centerX) * 7;
-          
-          el.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px)`;
-        });
-
-        el.addEventListener('mouseleave', () => {
-          el.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)';
-        });
-      });
-    }
-
-    initTilt();
     loadPosts();
 
     if (window.netlifyIdentity) {
