@@ -82,6 +82,7 @@
       100% { transform: translateY(-130vh) scale(1.2); opacity: 0; }
     }
 
+    /* Hero экран */
     .hero-section {
       min-height: 100vh;
       display: flex;
@@ -206,6 +207,7 @@
       50% { transform: translate(-50%, 12px); }
     }
 
+    /* Контейнер проектов и публикаций */
     .container {
       max-width: 960px;
       margin: 0 auto;
@@ -499,6 +501,16 @@
 
     marked.setOptions({ breaks: true, gfm: true });
 
+    // Автоматический преобразователь ссылок Google Drive в прямой аудиопоток
+    function formatAudioUrl(url) {
+      if (!url) return '';
+      if (url.includes('drive.google.com/file/d/')) {
+        const fileId = url.split('/file/d/')[1].split('/')[0];
+        return `https://docs.google.com/uc?export=open&id=${fileId}`;
+      }
+      return url;
+    }
+
     const scrollIndicator = document.getElementById('scroll-indicator');
     const contentContainer = document.getElementById('portfolio-start');
     
@@ -581,6 +593,8 @@
 
         projectsData.forEach((project, index) => {
           const descHtml = project.description ? marked.parse(project.description) : '';
+          const audioSrc = formatAudioUrl(project.audio);
+          
           const card = document.createElement('div');
           card.className = 'project-card';
           card.style.animationDelay = `${index * 0.1}s`;
@@ -593,9 +607,11 @@
                 <h3 class="project-title">${project.title}</h3>
                 ${project.role ? `<div class="project-role">${project.role}</div>` : ''}
                 <div class="project-desc">${descHtml}</div>
-                ${project.audio ? `
+                ${audioSrc ? `
                   <div class="project-audio">
-                    <audio controls><source src="${project.audio}" type="audio/mpeg"></audio>
+                    <audio controls preload="none">
+                      <source src="${audioSrc}" type="audio/mpeg">
+                    </audio>
                   </div>
                 ` : ''}
               </div>
@@ -662,7 +678,8 @@
           `;
         }
       } else if (post.media_type === 'audio' && post.media_url) {
-        mediaHtml = `<audio controls><source src="${post.media_url}" type="audio/mpeg"></audio>`;
+        const audioSrc = formatAudioUrl(post.media_url);
+        mediaHtml = `<audio controls preload="none"><source src="${audioSrc}" type="audio/mpeg"></audio>`;
       } else if (post.media_type === 'image' && post.media_url) {
         mediaHtml = `
           <div class="media-container">
