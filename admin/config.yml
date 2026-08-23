@@ -29,7 +29,7 @@ collections:
       - { label: "Название проекта", name: "title", widget: "string" }
       - { label: "Роль / Категория", name: "role", widget: "string", required: false }
       - { label: "Обложка / Кадр проекта", name: "image", widget: "image" }
-      - { label: "Аудио-демо трека (MP3 или прямая ссылка)", name: "audio", widget: "string", required: false }
+      - { label: "Аудио-демо трека (MP3 или прямая ссылка)", name: "audio", widget: "file", required: false }
       - { label: "Описание участия в проекте", name: "description", widget: "markdown" }
       - { label: "Текст на ссылке", name: "link_text", widget: "string", default: "Смотреть проект →" }
       - { label: "Ссылка на проект (Steam / YouTube / Сайт)", name: "link_url", widget: "string", required: false }
