@@ -31,8 +31,16 @@ collections:
     format: "json"
     fields:
       - { label: "Порядковый номер (1 - верхний)", name: "order", widget: "number", default: 1, value_type: "int" }
+      - label: "Категория проекта"
+        name: "category"
+        widget: "select"
+        options:
+          - { label: "Видеоигры", value: "games" }
+          - { label: "Мультимедиа", value: "multimedia" }
+          - { label: "Концертная деятельность", value: "concerts" }
+        default: "games"
       - { label: "Название проекта", name: "title", widget: "string" }
-      - { label: "Роль / Категория", name: "role", widget: "string", required: false }
+      - { label: "Роль / Подзаголовок", name: "role", widget: "string", required: false }
       - { label: "Обложка / Кадр проекта", name: "image", widget: "image" }
       - { label: "Аудио-файл трека (MP3)", name: "audio", widget: "file", required: false }
       - { label: "Описание участия в проекте", name: "description", widget: "markdown" }
