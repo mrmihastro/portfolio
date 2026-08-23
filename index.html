@@ -622,8 +622,8 @@
     <div class="contact-card">
       <div class="social-links" id="social-links-container"></div>
 
-      <!-- Бесплатная форма Formspree: замени YOUR_FORM_ID на свой ID из Formspree -->
-      <form id="contact-form" action="https://formspree.io/f/YOUR_FORM_ID" method="POST" class="contact-form">
+      <!-- Форма Formspree -->
+      <form id="contact-form" action="https://formspree.io/f/xvkpyjzg" method="POST" class="contact-form">
         <div class="form-group">
           <label for="name">Ваше имя</label>
           <input type="text" id="name" name="name" class="form-control" placeholder="Как к вам обращаться" required />
@@ -656,7 +656,7 @@
 
     marked.setOptions({ breaks: true, gfm: true });
 
-    // Обработка отправки формы без перезагрузки страницы (AJAX)
+    // AJAX отправка в Formspree
     const contactForm = document.getElementById('contact-form');
     const submitBtn = document.getElementById('submit-btn');
     const formStatus = document.getElementById('form-status');
