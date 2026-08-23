@@ -3,5 +3,5 @@
   "date": "23.08.2026",
   "body": "Тест",
   "media_type": "musescore",
-  "media_url": "<iframe id=\"score-iframe\" width=\"100%\" height=\"394\" src=\"https://musescore.com/user/24181806/scores/22596412/embed\" frameborder=\"0\" allowfullscreen allow=\"autoplay; fullscreen\"></iframe><span><a href=\"https://musescore.com/user/24181806/scores/22596412/s/Cr50Da\" target=\"_blank\">Glacied Window – M. Tarbagaev</a> by <a href=\"https://musescore.com/user/24181806\">mihastro</a></span>"
+  "media_url": "<iframe referrerpolicy=\"no-referrer\" id=\"score-iframe\" width=\"100%\" height=\"394\" src=\"https://musescore.com/user/24181806/scores/22596412/embed\" frameborder=\"0\" allowfullscreen allow=\"autoplay; fullscreen\"></iframe><span><a href=\"https://musescore.com/user/24181806/scores/22596412/s/Cr50Da\" target=\"_blank\">Glacied Window – M. Tarbagaev</a> by <a href=\"https://musescore.com/user/24181806\">mihastro</a></span>"
 }
