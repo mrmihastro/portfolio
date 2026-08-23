@@ -26,6 +26,10 @@
 
     * { box-sizing: border-box; }
 
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
       font-family: 'Inter', -apple-system, sans-serif;
       background-color: var(--bg);
@@ -78,26 +82,30 @@
       100% { transform: translateY(-130vh) scale(1.2); opacity: 0; }
     }
 
-    .container {
-      max-width: 920px;
-      margin: 0 auto;
-      padding: 4rem 1.5rem;
+    /* Главный полноэкранный блок (Первый экран) */
+    .hero-section {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
       position: relative;
+      padding: 2rem 1.5rem 5rem;
       z-index: 1;
     }
 
-    /* Hero */
     .hero-card {
       display: flex;
       flex-direction: column;
       background: var(--card-bg);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      margin-bottom: 4rem;
+      border-radius: 18px;
       position: relative;
       overflow: hidden;
-      animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      animation: fadeIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      box-shadow: 0 15px 45px rgba(0, 0, 0, 0.6);
+      max-width: 960px;
+      width: 100%;
     }
 
     .hero-card::after {
@@ -108,30 +116,124 @@
       background: linear-gradient(90deg, transparent, var(--accent), transparent);
     }
 
-    @media (min-width: 680px) {
-      .hero-card { flex-direction: row; align-items: stretch; }
+    @media (min-width: 768px) {
+      .hero-card {
+        flex-direction: row;
+        align-items: stretch;
+      }
     }
 
-    .avatar-wrapper { width: 100%; height: 260px; flex-shrink: 0; }
-    @media (min-width: 680px) { .avatar-wrapper { width: 240px; height: auto; } }
+    .avatar-wrapper {
+      width: 100%;
+      height: 300px;
+      flex-shrink: 0;
+      position: relative;
+    }
 
-    .avatar { width: 100%; height: 100%; object-fit: cover; display: block; border-right: 1px solid var(--border); }
-    .hero-info { padding: 2.5rem; display: flex; flex-direction: column; justify-content: center; flex-grow: 1; }
-    .hero-info h1 { font-family: 'Cinzel', serif; margin: 0 0 0.4rem; font-size: 2.2rem; font-weight: 700; color: #fff; }
-    .hero-info .subtitle { color: var(--accent); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2.5px; margin-bottom: 1.2rem; font-weight: 600; }
-    .hero-info .bio { color: var(--text-muted); margin: 0; font-size: 0.95rem; font-weight: 300; line-height: 1.65; }
+    @media (min-width: 768px) {
+      .avatar-wrapper {
+        width: 310px;
+        height: auto;
+      }
+    }
 
-    /* Заголовки секций */
+    .avatar {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      border-right: 1px solid var(--border);
+    }
+
+    .hero-info {
+      padding: 3rem 2.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      flex-grow: 1;
+    }
+
+    .hero-info h1 {
+      font-family: 'Cinzel', serif;
+      margin: 0 0 0.5rem;
+      font-size: 2.5rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: #ffffff;
+    }
+
+    .hero-info .subtitle {
+      color: var(--accent);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 2.5px;
+      margin-bottom: 1.4rem;
+      font-weight: 600;
+    }
+
+    .hero-info .bio {
+      color: var(--text-muted);
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 300;
+      line-height: 1.7;
+    }
+
+    /* Парящая кнопка-стрелка скролла */
+    .scroll-indicator {
+      position: absolute;
+      bottom: 1.8rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-decoration: none;
+      color: var(--accent);
+      opacity: 0.6;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      cursor: pointer;
+      animation: floatBounce 2.4s infinite ease-in-out;
+    }
+
+    .scroll-indicator:hover {
+      opacity: 1;
+    }
+
+    .scroll-indicator svg {
+      width: 28px;
+      height: 28px;
+      stroke: var(--accent);
+    }
+
+    @keyframes floatBounce {
+      0%, 100% {
+        transform: translate(-50%, 0);
+      }
+      50% {
+        transform: translate(-50%, 10px);
+      }
+    }
+
+    /* Основной контейнер контента */
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 1.5rem 4rem;
+      position: relative;
+      z-index: 1;
+    }
+
     .section-header {
       display: flex;
       align-items: center;
       gap: 1.5rem;
-      margin: 4rem 0 2rem;
+      margin: 4.5rem 0 2.2rem;
     }
 
     .section-title {
       font-family: 'Cinzel', serif;
-      font-size: 1.25rem;
+      font-size: 1.3rem;
       letter-spacing: 2px;
       color: var(--accent);
       margin: 0;
@@ -141,7 +243,7 @@
 
     .section-line { flex: 1; height: 1px; background: var(--border); }
 
-    /* Карточки проектов портфолио */
+    /* Карточки проектов */
     .project-card {
       display: flex;
       flex-direction: column;
@@ -331,9 +433,8 @@
     <div class="orb orb-right-2"></div>
   </div>
 
-  <div class="container">
-
-    <!-- Hero / Профиль -->
+  <!-- Первый экран (Hero) строго по центру -->
+  <section class="hero-section">
     <header class="hero-card" id="hero-block">
       <div class="avatar-wrapper">
         <img class="avatar" id="author-avatar" src="" alt="Михаил Тарбагаев">
@@ -344,6 +445,17 @@
         <div class="bio" id="author-bio"></div>
       </div>
     </header>
+
+    <!-- Парящая стрелка скролла -->
+    <a href="#portfolio-start" class="scroll-indicator" aria-label="Прокрутить к проектам">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+      </svg>
+    </a>
+  </section>
+
+  <!-- Контент портфолио -->
+  <div class="container" id="portfolio-start">
 
     <!-- Секция Проектов -->
     <div class="section-header">
