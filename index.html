@@ -161,33 +161,47 @@
       transform: translateY(-2px);
     }
 
-    @media (min-width: 680px) {
-      .project-card { flex-direction: row; }
+    @media (min-width: 720px) {
+      .project-card {
+        flex-direction: row;
+        align-items: center;
+      }
     }
 
     .project-image-wrapper {
       width: 100%;
-      height: 220px;
       flex-shrink: 0;
-      overflow: hidden;
+      padding: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    @media (min-width: 680px) {
-      .project-image-wrapper { width: 300px; height: auto; }
+    @media (min-width: 720px) {
+      .project-image-wrapper {
+        width: 42%;
+        padding: 1.5rem 0 1.5rem 1.5rem;
+      }
     }
 
     .project-img {
       width: 100%;
-      height: 100%;
+      aspect-ratio: 16 / 9;
       object-fit: cover;
+      border-radius: 10px;
+      border: 1px solid var(--border);
       display: block;
       transition: transform 0.4s ease;
+      background: #000;
     }
 
-    .project-card:hover .project-img { transform: scale(1.03); }
+    .project-card:hover .project-img {
+      transform: scale(1.02);
+      border-color: var(--border-hover);
+    }
 
     .project-content {
-      padding: 2rem;
+      padding: 1.5rem 1.8rem;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -219,6 +233,8 @@
 
     .project-desc p { margin: 0 0 0.5rem 0; }
     .project-desc p:last-child { margin-bottom: 0; }
+    .project-desc ul { margin: 0.4rem 0 0.8rem 1.2rem; padding: 0; }
+    .project-desc li { margin-bottom: 0.3rem; }
 
     .project-link {
       display: inline-flex;
@@ -404,7 +420,6 @@
       }
     }
 
-    // Загрузка проектов портфолио
     async function loadProjects() {
       const container = document.getElementById('projects-container');
       try {
@@ -439,7 +454,7 @@
                 <h3 class="project-title">${project.title}</h3>
                 <div class="project-desc">${descHtml}</div>
               </div>
-              ${project.link_url ? `<a href="${project.link_url}" target="_blank" rel="noopener" class="project-link">${project.link_text || 'Перейти к проекту →'}</a>` : ''}
+              ${project.link_url ? `<a href="${project.link_url}" target="_blank" rel="noopener" class="project-link">${project.link_text || 'Смотреть проект →'}</a>` : ''}
             </div>
           `;
           container.appendChild(card);
@@ -449,7 +464,6 @@
       }
     }
 
-    // Загрузка публикаций
     async function loadPosts() {
       const container = document.getElementById('posts-container');
       try {
