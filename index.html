@@ -179,7 +179,6 @@
       line-height: 1.65;
     }
 
-    /* Панель действий в шапке: соцсети + кнопка "Связаться" */
     .hero-actions {
       display: flex;
       flex-wrap: wrap;
@@ -274,7 +273,7 @@
       display: flex;
       align-items: center;
       gap: 1.5rem;
-      margin: 2rem 0 2rem;
+      margin: 2rem 0 1.5rem;
     }
 
     .section-title {
@@ -288,6 +287,39 @@
     }
 
     .section-line { flex: 1; height: 1px; background: var(--border); }
+
+    /* Переключатель категорий проектов (Табы) */
+    .project-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-bottom: 2rem;
+    }
+
+    .filter-btn {
+      background: #181a20;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 0.6rem 1.3rem;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .filter-btn:hover {
+      border-color: var(--border-hover);
+      color: #fff;
+    }
+
+    .filter-btn.active {
+      background: var(--accent-muted);
+      border-color: var(--accent);
+      color: var(--accent);
+      font-weight: 600;
+    }
 
     /* Карточки проектов */
     .project-card {
@@ -601,7 +633,6 @@
         <div class="subtitle" id="author-subtitle">Композитор & Саунд-продюсер</div>
         <div class="bio" id="author-bio"></div>
         
-        <!-- Кнопки действий: "Связаться" + Соцсети -->
         <div class="hero-actions">
           <a href="#contact-section" class="btn-contact-hero">Связаться</a>
           <div id="hero-social-links" style="display: inline-flex; flex-wrap: wrap; gap: 0.6rem;"></div>
@@ -624,6 +655,14 @@
       <h2 class="section-title">Проекты</h2>
       <div class="section-line"></div>
     </div>
+
+    <!-- Кнопки-переключатели категорий -->
+    <div class="project-filters" id="project-filters">
+      <button class="filter-btn active" data-category="games">Видеоигры</button>
+      <button class="filter-btn" data-category="multimedia">Мультимедиа</button>
+      <button class="filter-btn" data-category="concerts">Концертная деятельность</button>
+    </div>
+
     <div id="projects-container">
       <div class="skeleton-card">
         <div class="skeleton-line skeleton-title"></div>
@@ -684,6 +723,20 @@
     const GITHUB_REPO = "portfolio";
 
     marked.setOptions({ breaks: true, gfm: true });
+
+    let allProjects = [];
+    let currentCategory = 'games';
+
+    // Фильтрация проектов
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    filterButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentCategory = btn.dataset.category;
+        renderProjects();
+      });
+    });
 
     // AJAX отправка Formspree
     const contactForm = document.getElementById('contact-form');
@@ -805,7 +858,6 @@
         if (profile.bio) document.getElementById('author-bio').innerHTML = marked.parse(profile.bio);
         if (profile.avatar) document.getElementById('author-avatar').src = profile.avatar;
 
-        // Выводим кнопки соцсетей в шапку сайта
         const socialContainer = document.getElementById('hero-social-links');
         let socialHtml = '';
         if (profile.telegram) socialHtml += `<a href="${profile.telegram}" target="_blank" rel="noopener" class="social-btn">Telegram</a>`;
@@ -820,55 +872,67 @@
     }
 
     async function loadProjects() {
-      const container = document.getElementById('projects-container');
       try {
         const response = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/projects`);
         if (!response.ok) throw new Error('Папка проектов пока пуста');
         const files = await response.json();
         
-        let projectsData = [];
+        allProjects = [];
         for (const file of files) {
           if (file.name.endsWith('.json')) {
             const res = await fetch(file.download_url);
             const proj = await res.json();
-            projectsData.push(proj);
+            allProjects.push(proj);
           }
         }
 
-        projectsData.sort((a, b) => (Number(a.order) || 999) - (Number(b.order) || 999));
-        container.innerHTML = '';
-
-        projectsData.forEach((project, index) => {
-          const descHtml = project.description ? marked.parse(project.description) : '';
-          const audioUrl = project.audio || project.audio_url || project.media_url || project.track || '';
-          const audioPlayerHtml = renderAudioPlayer(audioUrl);
-          
-          const card = document.createElement('div');
-          card.className = 'project-card';
-          card.style.animationDelay = `${index * 0.1}s`;
-          card.innerHTML = `
-            <div class="project-image-wrapper">
-              <img class="project-img" src="${project.image || ''}" alt="${project.title}">
-            </div>
-            <div class="project-content">
-              <div>
-                <h3 class="project-title">${project.title}</h3>
-                ${project.role ? `<div class="project-role">${project.role}</div>` : ''}
-                <div class="project-desc">${descHtml}</div>
-                ${audioPlayerHtml ? `
-                  <div class="project-audio">
-                    ${audioPlayerHtml}
-                  </div>
-                ` : ''}
-              </div>
-              ${project.link_url ? `<a href="${project.link_url}" target="_blank" rel="noopener" class="project-link">${project.link_text || 'Смотреть проект →'}</a>` : ''}
-            </div>
-          `;
-          container.appendChild(card);
-        });
+        allProjects.sort((a, b) => (Number(a.order) || 999) - (Number(b.order) || 999));
+        renderProjects();
       } catch (err) {
-        container.innerHTML = '<p style="color:var(--text-muted); text-align:center;">Проекты пока не добавлены.</p>';
+        document.getElementById('projects-container').innerHTML = '<p style="color:var(--text-muted); text-align:center;">Проекты пока не добавлены.</p>';
       }
+    }
+
+    function renderProjects() {
+      const container = document.getElementById('projects-container');
+      
+      // Фильтруем проекты: если category не задана, по умолчанию считаем "games"
+      const filtered = allProjects.filter(p => (p.category || 'games') === currentCategory);
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-muted); text-align:center; padding: 2rem 0;">В этой категории пока нет проектов.</p>';
+        return;
+      }
+
+      container.innerHTML = '';
+      filtered.forEach((project, index) => {
+        const descHtml = project.description ? marked.parse(project.description) : '';
+        const audioUrl = project.audio || project.audio_url || project.media_url || project.track || '';
+        const audioPlayerHtml = renderAudioPlayer(audioUrl);
+        
+        const card = document.createElement('div');
+        card.className = 'project-card';
+        card.style.animationDelay = `${index * 0.08}s`;
+        card.innerHTML = `
+          <div class="project-image-wrapper">
+            <img class="project-img" src="${project.image || ''}" alt="${project.title}">
+          </div>
+          <div class="project-content">
+            <div>
+              <h3 class="project-title">${project.title}</h3>
+              ${project.role ? `<div class="project-role">${project.role}</div>` : ''}
+              <div class="project-desc">${descHtml}</div>
+              ${audioPlayerHtml ? `
+                <div class="project-audio">
+                  ${audioPlayerHtml}
+                </div>
+              ` : ''}
+            </div>
+            ${project.link_url ? `<a href="${project.link_url}" target="_blank" rel="noopener" class="project-link">${project.link_text || 'Смотреть проект →'}</a>` : ''}
+          </div>
+        `;
+        container.appendChild(card);
+      });
     }
 
     async function loadPosts() {
