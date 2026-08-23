@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Михаил Тарбагаев</title>
   
-  <!-- Премиальные шрифты Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -14,14 +13,14 @@
   
   <style>
     :root {
-      --bg: #0c0d10;
-      --card-bg: #14161b;
+      --bg: #0a0b0d;
+      --card-bg: #13151a;
       --accent: #d4af37;
       --accent-muted: rgba(212, 175, 55, 0.15);
       --text: #e1e4ea;
       --text-muted: #8b929d;
-      --border: #232730;
-      --border-hover: #3b4252;
+      --border: #20242c;
+      --border-hover: #383f4d;
     }
 
     * { box-sizing: border-box; }
@@ -33,25 +32,97 @@
       margin: 0;
       line-height: 1.7;
       -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      position: relative;
+      min-height: 100vh;
     }
 
-    /* Фоновый деликатный узор сетки */
-    body::before {
+    /* Фоновый золотистый градиент по краям */
+    body::after {
       content: '';
       position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background-image: 
-        radial-gradient(var(--border) 1px, transparent 1px);
-      background-size: 32px 32px;
-      opacity: 0.35;
-      z-index: -1;
+      inset: 0;
+      background: 
+        radial-gradient(circle at 0% 50%, rgba(212, 175, 55, 0.07) 0%, transparent 45%),
+        radial-gradient(circle at 100% 50%, rgba(212, 175, 55, 0.07) 0%, transparent 45%);
       pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Контейнер для всплывающих снизу сфер */
+    .orb-background {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .orb {
+      position: absolute;
+      bottom: -300px;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.28;
+      animation: riseAndFloat linear infinite;
+    }
+
+    .orb-left-1 {
+      width: 320px;
+      height: 320px;
+      background: radial-gradient(circle, #d4af37, #856114, transparent);
+      left: -80px;
+      animation-duration: 22s;
+    }
+    .orb-left-2 {
+      width: 220px;
+      height: 220px;
+      background: radial-gradient(circle, #f3e5ab, #aa7c11, transparent);
+      left: 4%;
+      animation-duration: 16s;
+      animation-delay: 8s;
+    }
+
+    .orb-right-1 {
+      width: 380px;
+      height: 380px;
+      background: radial-gradient(circle, #b8860b, #4a3505, transparent);
+      right: -100px;
+      animation-duration: 26s;
+      animation-delay: 3s;
+    }
+    .orb-right-2 {
+      width: 260px;
+      height: 260px;
+      background: radial-gradient(circle, #ffd700, #996515, transparent);
+      right: 3%;
+      animation-duration: 19s;
+      animation-delay: 12s;
+    }
+
+    @keyframes riseAndFloat {
+      0% {
+        transform: translateY(0) scale(0.8);
+        opacity: 0;
+      }
+      20% {
+        opacity: 0.35;
+      }
+      80% {
+        opacity: 0.25;
+      }
+      100% {
+        transform: translateY(-130vh) scale(1.2);
+        opacity: 0;
+      }
     }
 
     .container {
       max-width: 900px;
       margin: 0 auto;
       padding: 4rem 1.5rem;
+      position: relative;
+      z-index: 1;
     }
 
     /* Hero секция */
@@ -68,6 +139,7 @@
       position: relative;
       overflow: hidden;
       animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
 
     .hero-card::after {
@@ -163,15 +235,15 @@
       padding: 2.2rem;
       margin-bottom: 2rem;
       border: 1px solid var(--border);
-      transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
       animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       opacity: 0;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
     }
 
     .card:hover {
       border-color: var(--border-hover);
-      transform: translateY(-2px);
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
     }
 
     .card-meta {
@@ -252,7 +324,7 @@
       display: block;
     }
 
-    /* Скелетон-загрузчик */
+    /* Скелетон */
     .skeleton-card {
       background: var(--card-bg);
       border: 1px solid var(--border);
@@ -305,15 +377,21 @@
 </head>
 <body>
 
+  <div class="orb-background">
+    <div class="orb orb-left-1"></div>
+    <div class="orb orb-left-2"></div>
+    <div class="orb orb-right-1"></div>
+    <div class="orb orb-right-2"></div>
+  </div>
+
   <div class="container">
 
-    <!-- Hero / Информация о композиторе -->
     <header class="hero-card">
       <div class="avatar-wrapper">
         <img class="avatar" src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&q=80" alt="Фото композитора">
       </div>
       <div class="hero-info">
-        <h1>Имя Композитора</h1>
+        <h1>Михаил Тарбагаев</h1>
         <div class="subtitle">Композитор & Саунд-продюсер</div>
         <p class="bio">
           Создание оркестровой и гибридной музыки для кинофильмов, видеоигр и мультимедийных проектов. Академическая партитурная запись, интерактивный звук и продакшн.
@@ -321,14 +399,12 @@
       </div>
     </header>
 
-    <!-- Секция публикаций -->
     <div class="section-header">
       <h2 class="section-title">Партитуры и Медиа</h2>
       <div class="section-line"></div>
     </div>
 
     <div id="posts-container">
-      <!-- Анимированный скелетон пока грузятся данные -->
       <div class="skeleton-card">
         <div class="skeleton-line skeleton-title"></div>
         <div class="skeleton-line" style="width: 80%;"></div>
@@ -337,7 +413,7 @@
     </div>
 
     <footer class="footer">
-      <p>© 2026 Портфолио Композитора • <a href="/admin/">Панель управления</a></p>
+      <p>© 2026 Михаил Тарбагаев • <a href="/admin/">Панель управления</a></p>
     </footer>
 
   </div>
@@ -393,7 +469,7 @@
         let src = post.media_url.includes('src="') ? post.media_url.match(/src="([^"]+)"/)[1] : post.media_url;
         mediaHtml = `
           <div class="media-container musescore-container">
-            <iframe src="${src}" allowfullscreen></iframe>
+            <iframe src="${src}" referrerpolicy="no-referrer" allowfullscreen></iframe>
           </div>
         `;
       } else if (post.media_type === 'youtube' && post.media_url) {
