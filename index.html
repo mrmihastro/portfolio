@@ -3,7 +3,33 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Михаил Тарбагаев</title>
+  
+  <!-- Подтверждение прав для Google Search Console -->
+  <meta name="google-site-verification" content="DYZQXtw82q3FZvAjyFRyT8o_34QGQmMyl0994ZWkvq8" />
+
+  <!-- Основные SEO-теги для поисковиков -->
+  <title>Михаил Тарбагаев — Композитор, Саунд-дизайнер | Официальный сайт</title>
+  <meta name="description" content="Официальный сайт и портфолио композитора и саунд-дизайнера Михаила Тарбагаева. Автор музыки для видеоигр, кинофильмов и мультимедиа-проектов.">
+  <meta name="keywords" content="Тарбагаев, Михаил Тарбагаев, композитор, саунд-дизайн, саундтрек, музыка для игр, Tarbagaev, Mikhail Tarbagaev">
+  <meta name="author" content="Михаил Тарбагаев">
+  <meta name="robots" content="index, follow">
+
+  <!-- Open Graph для соцсетей (VK, Telegram, Discord) -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Михаил Тарбагаев — Композитор & Саунд-продюсер">
+  <meta property="og:description" content="Портфолио, саундтреки к видеоиграм, мультимедиа-проекты и партитуры.">
+
+  <!-- Микроразметка Schema.org для Google -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Михаил Тарбагаев",
+    "alternateName": "Mikhail Tarbagaev",
+    "jobTitle": "Композитор, Саунд-дизайнер",
+    "description": "Автор музыки для видеоигр, кинофильмов и мультимедиа-проектов."
+  }
+  </script>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -288,7 +314,7 @@
 
     .section-line { flex: 1; height: 1px; background: var(--border); }
 
-    /* Переключатель категорий проектов (Табы) */
+    /* Переключатель категорий проектов */
     .project-filters {
       display: flex;
       flex-wrap: wrap;
@@ -727,7 +753,6 @@
     let allProjects = [];
     let currentCategory = 'games';
 
-    // Фильтрация проектов
     const filterButtons = document.querySelectorAll('.filter-btn');
     filterButtons.forEach(btn => {
       btn.addEventListener('click', () => {
@@ -738,7 +763,6 @@
       });
     });
 
-    // AJAX отправка Formspree
     const contactForm = document.getElementById('contact-form');
     const submitBtn = document.getElementById('submit-btn');
     const formStatus = document.getElementById('form-status');
@@ -852,7 +876,6 @@
         if (profile.name) {
           document.getElementById('author-name').textContent = profile.name;
           document.getElementById('footer-author-name').textContent = profile.name;
-          document.title = profile.name;
         }
         if (profile.subtitle) document.getElementById('author-subtitle').textContent = profile.subtitle;
         if (profile.bio) document.getElementById('author-bio').innerHTML = marked.parse(profile.bio);
@@ -895,8 +918,6 @@
 
     function renderProjects() {
       const container = document.getElementById('projects-container');
-      
-      // Фильтруем проекты: если category не задана, по умолчанию считаем "games"
       const filtered = allProjects.filter(p => (p.category || 'games') === currentCategory);
 
       if (filtered.length === 0) {
