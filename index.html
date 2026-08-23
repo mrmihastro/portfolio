@@ -90,9 +90,8 @@
       justify-content: center;
       align-items: center;
       position: relative;
-      padding: 3rem 1.5rem 0;
-      z-index: 1;
-      box-sizing: border-box;
+      padding: 2rem 1.5rem;
+      z-index: 2;
     }
 
     .hero-card {
@@ -180,12 +179,6 @@
       line-height: 1.7;
     }
 
-    .hero-spacer {
-      width: 100%;
-      height: 14vh;
-      min-height: 20px;
-    }
-
     .scroll-indicator {
       position: absolute;
       bottom: 2.5rem;
@@ -196,9 +189,10 @@
       align-items: center;
       text-decoration: none;
       color: var(--accent);
-      transition: opacity 0.15s ease-out;
       cursor: pointer;
       animation: floatBounce 2.2s infinite ease-in-out;
+      transition: opacity 0.2s ease;
+      z-index: 3;
     }
 
     .scroll-indicator svg {
@@ -213,19 +207,22 @@
       50% { transform: translate(-50%, 12px); }
     }
 
+    /* Контейнер контента, который плавно подъезжает */
     .container {
       max-width: 960px;
       margin: 0 auto;
       padding: 0 1.5rem 4rem;
       position: relative;
-      z-index: 1;
+      z-index: 2;
+      will-change: transform;
+      transform: translateY(0px);
     }
 
     .section-header {
       display: flex;
       align-items: center;
       gap: 1.5rem;
-      margin: 3.5rem 0 2rem;
+      margin: 2rem 0 2rem;
     }
 
     .section-title {
@@ -443,8 +440,6 @@
       </div>
     </header>
 
-    <div class="hero-spacer" id="hero-spacer"></div>
-
     <a href="#portfolio-start" class="scroll-indicator" id="scroll-indicator" aria-label="Прокрутить к проектам">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
@@ -452,7 +447,7 @@
     </a>
   </section>
 
-  <!-- Контент портфолио -->
+  <!-- Контент портфолио с эффектом подъезда -->
   <div class="container" id="portfolio-start">
 
     <!-- Секция Проектов -->
@@ -493,21 +488,34 @@
 
     marked.setOptions({ breaks: true, gfm: true });
 
+    // Высокоточный параллакс-подъезд контента и растворение стрелки
     const scrollIndicator = document.getElementById('scroll-indicator');
-    const heroSpacer = document.getElementById('hero-spacer');
-    const initialSpacerHeight = window.innerHeight * 0.14;
+    const contentContainer = document.getElementById('portfolio-start');
+    
+    // Максимальное смещение, которое плавно "схлопывается" при скролле
+    const MAX_PULL_UP = 140; 
+    const SCROLL_RANGE = 350;
 
-    window.addEventListener('scroll', () => {
+    function handleParallax() {
       const scrollY = window.scrollY;
 
-      const fadeThreshold = 180;
-      const opacity = Math.max(0, 1 - (scrollY / fadeThreshold));
-      scrollIndicator.style.opacity = opacity;
-      scrollIndicator.style.pointerEvents = opacity === 0 ? 'none' : 'auto';
+      // 1. Плавный подъем контента навстречу шапке
+      const progress = Math.min(1, scrollY / SCROLL_RANGE);
+      const currentOffset = (1 - progress) * MAX_PULL_UP;
+      contentContainer.style.transform = `translateY(${currentOffset}px)`;
 
-      const newHeight = Math.max(0, initialSpacerHeight - (scrollY * 0.6));
-      heroSpacer.style.height = `${newHeight}px`;
+      // 2. Плавное растворение стрелки
+      const fadeOpacity = Math.max(0, 1 - (scrollY / 180));
+      scrollIndicator.style.opacity = fadeOpacity;
+      scrollIndicator.style.pointerEvents = fadeOpacity === 0 ? 'none' : 'auto';
+    }
+
+    window.addEventListener('scroll', () => {
+      window.requestAnimationFrame(handleParallax);
     }, { passive: true });
+
+    // Инициализация стартовой позиции
+    handleParallax();
 
     function getYouTubeId(url) {
       if (!url) return null;
