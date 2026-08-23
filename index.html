@@ -37,7 +37,6 @@
       min-height: 100vh;
     }
 
-    /* Фоновый золотистый градиент по краям */
     body::after {
       content: '';
       position: fixed;
@@ -49,7 +48,6 @@
       z-index: 0;
     }
 
-    /* Контейнер для всплывающих снизу сфер */
     .orb-background {
       position: fixed;
       inset: 0;
@@ -67,54 +65,16 @@
       animation: riseAndFloat linear infinite;
     }
 
-    .orb-left-1 {
-      width: 320px;
-      height: 320px;
-      background: radial-gradient(circle, #d4af37, #856114, transparent);
-      left: -80px;
-      animation-duration: 22s;
-    }
-    .orb-left-2 {
-      width: 220px;
-      height: 220px;
-      background: radial-gradient(circle, #f3e5ab, #aa7c11, transparent);
-      left: 4%;
-      animation-duration: 16s;
-      animation-delay: 8s;
-    }
-
-    .orb-right-1 {
-      width: 380px;
-      height: 380px;
-      background: radial-gradient(circle, #b8860b, #4a3505, transparent);
-      right: -100px;
-      animation-duration: 26s;
-      animation-delay: 3s;
-    }
-    .orb-right-2 {
-      width: 260px;
-      height: 260px;
-      background: radial-gradient(circle, #ffd700, #996515, transparent);
-      right: 3%;
-      animation-duration: 19s;
-      animation-delay: 12s;
-    }
+    .orb-left-1 { width: 320px; height: 320px; background: radial-gradient(circle, #d4af37, #856114, transparent); left: -80px; animation-duration: 22s; }
+    .orb-left-2 { width: 220px; height: 220px; background: radial-gradient(circle, #f3e5ab, #aa7c11, transparent); left: 4%; animation-duration: 16s; animation-delay: 8s; }
+    .orb-right-1 { width: 380px; height: 380px; background: radial-gradient(circle, #b8860b, #4a3505, transparent); right: -100px; animation-duration: 26s; animation-delay: 3s; }
+    .orb-right-2 { width: 260px; height: 260px; background: radial-gradient(circle, #ffd700, #996515, transparent); right: 3%; animation-duration: 19s; animation-delay: 12s; }
 
     @keyframes riseAndFloat {
-      0% {
-        transform: translateY(0) scale(0.8);
-        opacity: 0;
-      }
-      20% {
-        opacity: 0.35;
-      }
-      80% {
-        opacity: 0.25;
-      }
-      100% {
-        transform: translateY(-130vh) scale(1.2);
-        opacity: 0;
-      }
+      0% { transform: translateY(0) scale(0.8); opacity: 0; }
+      20% { opacity: 0.35; }
+      80% { opacity: 0.25; }
+      100% { transform: translateY(-130vh) scale(1.2); opacity: 0; }
     }
 
     .container {
@@ -125,7 +85,6 @@
       z-index: 1;
     }
 
-    /* Hero секция */
     .hero-card {
       display: flex;
       flex-direction: column;
@@ -175,9 +134,7 @@
       transition: transform 0.4s ease;
     }
 
-    .avatar-wrapper:hover .avatar {
-      transform: scale(1.04);
-    }
+    .avatar-wrapper:hover .avatar { transform: scale(1.04); }
 
     .hero-info h1 {
       font-family: 'Cinzel', serif;
@@ -204,7 +161,6 @@
       font-weight: 300;
     }
 
-    /* Заголовки секций */
     .section-header {
       display: flex;
       align-items: center;
@@ -222,13 +178,8 @@
       font-weight: 600;
     }
 
-    .section-line {
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
+    .section-line { flex: 1; height: 1px; background: var(--border); }
 
-    /* Карточки публикаций */
     .card {
       background: var(--card-bg);
       border-radius: 14px;
@@ -285,7 +236,6 @@
       font-weight: 300;
     }
 
-    /* Медиа-контейнеры */
     .media-container {
       width: 100%;
       margin-top: 1.2rem;
@@ -324,7 +274,6 @@
       display: block;
     }
 
-    /* Скелетон */
     .skeleton-card {
       background: var(--card-bg);
       border: 1px solid var(--border);
@@ -348,15 +297,8 @@
       100% { background-position: -200% 0; }
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
     .footer {
       text-align: center;
@@ -367,11 +309,7 @@
       color: var(--text-muted);
     }
 
-    .footer a {
-      color: var(--accent);
-      text-decoration: none;
-      transition: opacity 0.2s;
-    }
+    .footer a { color: var(--accent); text-decoration: none; transition: opacity 0.2s; }
     .footer a:hover { opacity: 0.8; }
   </style>
 </head>
@@ -386,16 +324,14 @@
 
   <div class="container">
 
-    <header class="hero-card">
+    <header class="hero-card" id="hero-block">
       <div class="avatar-wrapper">
-        <img class="avatar" src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&q=80" alt="Фото композитора">
+        <img class="avatar" id="author-avatar" src="" alt="Фото композитора">
       </div>
       <div class="hero-info">
-        <h1>Михаил Тарбагаев</h1>
-        <div class="subtitle">Композитор & Саунд-продюсер</div>
-        <p class="bio">
-          Создание оркестровой и гибридной музыки для кинофильмов, видеоигр и мультимедийных проектов. Академическая партитурная запись, интерактивный звук и продакшн.
-        </p>
+        <h1 id="author-name">Михаил Тарбагаев</h1>
+        <div class="subtitle" id="author-subtitle">Композитор & Саунд-продюсер</div>
+        <p class="bio" id="author-bio"></p>
       </div>
     </header>
 
@@ -413,7 +349,7 @@
     </div>
 
     <footer class="footer">
-      <p>© 2026 Михаил Тарбагаев • <a href="/admin/">Панель управления</a></p>
+      <p>© 2026 <span id="footer-author-name">Михаил Тарбагаев</span> • <a href="/admin/">Панель управления</a></p>
     </footer>
 
   </div>
@@ -439,6 +375,28 @@
       }
     }
 
+    // Загрузка настроек шапки (Профиль)
+    async function loadProfile() {
+      try {
+        const res = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/settings/profile.json`);
+        if (!res.ok) return;
+        const fileData = await res.json();
+        const profile = JSON.parse(decodeURIComponent(escape(atob(fileData.content))));
+
+        if (profile.name) {
+          document.getElementById('author-name').textContent = profile.name;
+          document.getElementById('footer-author-name').textContent = profile.name;
+          document.title = profile.name;
+        }
+        if (profile.subtitle) document.getElementById('author-subtitle').textContent = profile.subtitle;
+        if (profile.bio) document.getElementById('author-bio').textContent = profile.bio;
+        if (profile.avatar) document.getElementById('author-avatar').src = profile.avatar;
+      } catch (err) {
+        console.log('Используются стандартные данные шапки');
+      }
+    }
+
+    // Загрузка и сортировка постов по order
     async function loadPosts() {
       const container = document.getElementById('posts-container');
       try {
@@ -446,17 +404,28 @@
         if (!response.ok) throw new Error('Ошибка загрузки');
         const files = await response.json();
         
-        container.innerHTML = '';
-        
-        let delayIndex = 0;
-        for (const file of files.reverse()) {
+        let postsData = [];
+
+        for (const file of files) {
           if (file.name.endsWith('.json')) {
             const postRes = await fetch(file.download_url);
             const post = await postRes.json();
-            renderCard(container, post, delayIndex * 0.1);
-            delayIndex++;
+            postsData.push(post);
           }
         }
+
+        // Сортировка: от меньшего order к большему (1, 2, 3...)
+        postsData.sort((a, b) => {
+          const orderA = a.order !== undefined ? Number(a.order) : 999;
+          const orderB = b.order !== undefined ? Number(b.order) : 999;
+          return orderA - orderB;
+        });
+
+        container.innerHTML = '';
+
+        postsData.forEach((post, index) => {
+          renderCard(container, post, index * 0.1);
+        });
       } catch (err) {
         container.innerHTML = '<p style="color:var(--text-muted); text-align:center;">Записи не найдены или репозиторий еще настраивается.</p>';
       }
@@ -512,6 +481,7 @@
       container.appendChild(card);
     }
 
+    loadProfile();
     loadPosts();
 
     if (window.netlifyIdentity) {
