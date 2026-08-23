@@ -128,7 +128,7 @@
       margin-top: 1rem;
     }
 
-    /* Окно партитуры MuseScore: высокое вертикальное пространство */
+    /* Партитура MuseScore */
     .musescore-container iframe {
       width: 100%;
       height: 680px;
@@ -137,7 +137,7 @@
       background: #fff;
     }
 
-    /* Окно видео YouTube: строгое соотношение 16:9 */
+    /* Видео YouTube: соотношение 16:9 */
     .video-container iframe {
       width: 100%;
       aspect-ratio: 16 / 9;
@@ -206,6 +206,14 @@
     const GITHUB_USER = "mrmihastro";
     const GITHUB_REPO = "portfolio";
 
+    // Универсальный парсер ссылок YouTube
+    function getYouTubeId(url) {
+      if (!url) return null;
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|shorts\/)([^#&?]*).*/;
+      const match = url.match(regExp);
+      return (match && match[2].length === 11) ? match[2] : null;
+    }
+
     async function loadPosts() {
       const container = document.getElementById('posts-container');
       try {
@@ -238,13 +246,23 @@
           </div>
         `;
       } else if (post.media_type === 'youtube' && post.media_url) {
-        let videoId = post.media_url.includes('watch?v=') ? post.media_url.split('watch?v=')[1].split('&')[0] : post.media_url;
-        let src = videoId.startsWith('http') ? videoId : `https://www.youtube-nocookie.com/embed/${videoId}`;
-        mediaHtml = `
-          <div class="media-container video-container">
-            <iframe src="${src}" allowfullscreen></iframe>
-          </div>
-        `;
+        let videoId = getYouTubeId(post.media_url);
+        
+        if (videoId) {
+          mediaHtml = `
+            <div class="media-container video-container">
+              <iframe 
+                src="https://www.youtube-nocookie.com/embed/${videoId}" 
+                title="YouTube video player" 
+                frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                allowfullscreen>
+              </iframe>
+            </div>
+          `;
+        } else {
+          mediaHtml = `<p style="color: #ff6b6b; font-size: 0.9rem;">Некорректная ссылка на YouTube-видео</p>`;
+        }
       } else if (post.media_type === 'audio' && post.media_url) {
         mediaHtml = `<audio controls><source src="${post.media_url}" type="audio/mpeg"></audio>`;
       } else if (post.media_type === 'image' && post.media_url) {
