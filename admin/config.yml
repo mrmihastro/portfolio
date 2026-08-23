@@ -18,7 +18,6 @@ collections:
           - { label: "Биография / О себе", name: "bio", widget: "markdown" }
           - { label: "Фотография (Аватар)", name: "avatar", widget: "image", required: false }
 
-  # Новая коллекция: Проекты портфолио
   - name: "projects"
     label: "Проекты (Портфолио)"
     folder: "projects"
@@ -28,15 +27,15 @@ collections:
     fields:
       - { label: "Порядковый номер (1 - верхний)", name: "order", widget: "number", default: 1, value_type: "int" }
       - { label: "Название проекта", name: "title", widget: "string" }
-      - { label: "Роль / Категория (напр. Саундтрек, Саунд-дизайн)", name: "role", widget: "string", required: false }
+      - { label: "Роль / Категория", name: "role", widget: "string", required: false }
       - { label: "Обложка / Кадр проекта", name: "image", widget: "image" }
+      - { label: "Аудио-демо трека (MP3 или прямая ссылка)", name: "audio", widget: "string", required: false }
       - { label: "Описание участия в проекте", name: "description", widget: "markdown" }
       - { label: "Текст на ссылке", name: "link_text", widget: "string", default: "Смотреть проект →" }
-      - { label: "Ссылка на проект (Steam / YouTube / Сайт)", name: "link_url", widget: "string" }
+      - { label: "Ссылка на проект (Steam / YouTube / Сайт)", name: "link_url", widget: "string", required: false }
 
-  # Коллекция постов (микроблог / ноты)
   - name: "posts"
-    label: "Публикации и Записи"
+    label: "Публикации"
     folder: "posts"
     create: true
     slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
