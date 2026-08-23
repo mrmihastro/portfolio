@@ -82,7 +82,7 @@
       100% { transform: translateY(-130vh) scale(1.2); opacity: 0; }
     }
 
-    /* Главный полноэкранный блок (Первый экран) */
+    /* Hero экран */
     .hero-section {
       min-height: 100vh;
       display: flex;
@@ -90,8 +90,9 @@
       justify-content: center;
       align-items: center;
       position: relative;
-      padding: 2rem 1.5rem 5rem;
+      padding: 3rem 1.5rem;
       z-index: 1;
+      transition: padding-bottom 0.15s ease-out;
     }
 
     .hero-card {
@@ -179,10 +180,10 @@
       line-height: 1.7;
     }
 
-    /* Парящая кнопка-стрелка скролла */
+    /* Увеличенная парящая стрелка скролла */
     .scroll-indicator {
       position: absolute;
-      bottom: 1.8rem;
+      bottom: 2.2rem;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
@@ -190,20 +191,16 @@
       align-items: center;
       text-decoration: none;
       color: var(--accent);
-      opacity: 0.6;
       transition: opacity 0.3s ease, transform 0.3s ease;
       cursor: pointer;
-      animation: floatBounce 2.4s infinite ease-in-out;
-    }
-
-    .scroll-indicator:hover {
-      opacity: 1;
+      animation: floatBounce 2.2s infinite ease-in-out;
     }
 
     .scroll-indicator svg {
-      width: 28px;
-      height: 28px;
+      width: 36px;
+      height: 36px;
       stroke: var(--accent);
+      filter: drop-shadow(0 0 8px var(--accent-muted));
     }
 
     @keyframes floatBounce {
@@ -211,11 +208,11 @@
         transform: translate(-50%, 0);
       }
       50% {
-        transform: translate(-50%, 10px);
+        transform: translate(-50%, 12px);
       }
     }
 
-    /* Основной контейнер контента */
+    /* Контейнер для последующих разделов */
     .container {
       max-width: 960px;
       margin: 0 auto;
@@ -228,7 +225,7 @@
       display: flex;
       align-items: center;
       gap: 1.5rem;
-      margin: 4.5rem 0 2.2rem;
+      margin: 3.5rem 0 2rem;
     }
 
     .section-title {
@@ -433,8 +430,8 @@
     <div class="orb orb-right-2"></div>
   </div>
 
-  <!-- Первый экран (Hero) строго по центру -->
-  <section class="hero-section">
+  <!-- Первый экран (Hero) -->
+  <section class="hero-section" id="hero-section">
     <header class="hero-card" id="hero-block">
       <div class="avatar-wrapper">
         <img class="avatar" id="author-avatar" src="" alt="Михаил Тарбагаев">
@@ -447,9 +444,9 @@
     </header>
 
     <!-- Парящая стрелка скролла -->
-    <a href="#portfolio-start" class="scroll-indicator" aria-label="Прокрутить к проектам">
+    <a href="#portfolio-start" class="scroll-indicator" id="scroll-indicator" aria-label="Прокрутить к проектам">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
       </svg>
     </a>
   </section>
@@ -494,6 +491,35 @@
     const GITHUB_REPO = "portfolio";
 
     marked.setOptions({ breaks: true, gfm: true });
+
+    // Слушатель скролла: растворение стрелки и динамическое сжатие пустоты
+    const heroSection = document.getElementById('hero-section');
+    const scrollIndicator = document.getElementById('scroll-indicator');
+
+    window.addEventListener('scroll', () => {
+      const scrollY = window.scrollY;
+      
+      // Растворение стрелки на первых 120px
+      if (scrollY > 10) {
+        let opacity = Math.max(0, 1 - scrollY / 120);
+        scrollIndicator.style.opacity = opacity;
+        scrollIndicator.style.pointerEvents = opacity === 0 ? 'none' : 'auto';
+      } else {
+        scrollIndicator.style.opacity = '1';
+        scrollIndicator.style.pointerEvents = 'auto';
+      }
+
+      // Плавное сжатие пустоты снизу шапки
+      if (scrollY > 0) {
+        heroSection.style.minHeight = 'auto';
+        heroSection.style.paddingTop = '3rem';
+        heroSection.style.paddingBottom = '0rem';
+      } else {
+        heroSection.style.minHeight = '100vh';
+        heroSection.style.paddingTop = '3rem';
+        heroSection.style.paddingBottom = '3rem';
+      }
+    });
 
     function getYouTubeId(url) {
       if (!url) return null;
