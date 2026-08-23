@@ -332,7 +332,7 @@
     .project-desc ul { margin: 0.4rem 0 0.8rem 1.2rem; padding: 0; }
     .project-desc li { margin-bottom: 0.3rem; }
 
-    /* Аудиоплеер проекта */
+    /* Аудио-блок проекта */
     .project-audio {
       margin-bottom: 1.2rem;
       width: 100%;
@@ -343,6 +343,15 @@
       height: 38px;
       filter: invert(0.88) hue-rotate(180deg);
       border-radius: 6px;
+    }
+
+    .project-audio iframe {
+      width: 100%;
+      height: 56px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: block;
+      background: #181a20;
     }
 
     .project-link {
@@ -415,7 +424,11 @@
     .media-container { width: 100%; margin-top: 1.2rem; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); background: #000; }
     .musescore-container iframe { width: 100%; height: 680px; border: none; display: block; background: #fff; }
     .video-container iframe { width: 100%; aspect-ratio: 16 / 9; height: auto; border: none; display: block; }
-    audio { width: 100%; margin-top: 1rem; filter: invert(0.88) hue-rotate(180deg); }
+    
+    .audio-wrapper { margin-top: 1rem; }
+    .audio-wrapper audio { width: 100%; filter: invert(0.88) hue-rotate(180deg); }
+    .audio-wrapper iframe { width: 100%; height: 56px; border: 1px solid var(--border); border-radius: 8px; display: block; background: #181a20; }
+    
     img.post-img { width: 100%; max-height: 550px; object-fit: cover; display: block; }
 
     .skeleton-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 2.2rem; margin-bottom: 2rem; }
@@ -501,14 +514,16 @@
 
     marked.setOptions({ breaks: true, gfm: true });
 
-    // Автоматический преобразователь ссылок Google Drive в прямой аудиопоток
-    function formatAudioUrl(url) {
+    // Функция умного рендеринга плеера для Google Drive или стандартного MP3
+    function renderAudioPlayer(url) {
       if (!url) return '';
+      // Если ссылка на Google Drive
       if (url.includes('drive.google.com/file/d/')) {
         const fileId = url.split('/file/d/')[1].split('/')[0];
-        return `https://docs.google.com/uc?export=open&id=${fileId}`;
+        return `<iframe src="https://drive.google.com/file/d/${fileId}/preview" allow="autoplay"></iframe>`;
       }
-      return url;
+      // Обычный файл/прямой URL
+      return `<audio controls preload="none"><source src="${url}" type="audio/mpeg"></audio>`;
     }
 
     const scrollIndicator = document.getElementById('scroll-indicator');
@@ -593,7 +608,7 @@
 
         projectsData.forEach((project, index) => {
           const descHtml = project.description ? marked.parse(project.description) : '';
-          const audioSrc = formatAudioUrl(project.audio);
+          const audioPlayerHtml = renderAudioPlayer(project.audio);
           
           const card = document.createElement('div');
           card.className = 'project-card';
@@ -607,11 +622,9 @@
                 <h3 class="project-title">${project.title}</h3>
                 ${project.role ? `<div class="project-role">${project.role}</div>` : ''}
                 <div class="project-desc">${descHtml}</div>
-                ${audioSrc ? `
+                ${audioPlayerHtml ? `
                   <div class="project-audio">
-                    <audio controls preload="none">
-                      <source src="${audioSrc}" type="audio/mpeg">
-                    </audio>
+                    ${audioPlayerHtml}
                   </div>
                 ` : ''}
               </div>
@@ -678,8 +691,7 @@
           `;
         }
       } else if (post.media_type === 'audio' && post.media_url) {
-        const audioSrc = formatAudioUrl(post.media_url);
-        mediaHtml = `<audio controls preload="none"><source src="${audioSrc}" type="audio/mpeg"></audio>`;
+        mediaHtml = `<div class="audio-wrapper">${renderAudioPlayer(post.media_url)}</div>`;
       } else if (post.media_type === 'image' && post.media_url) {
         mediaHtml = `
           <div class="media-container">
