@@ -10,6 +10,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <!-- Парсер Markdown в HTML -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   
   <style>
     :root {
@@ -168,7 +170,6 @@
       font-size: 0.95rem;
       font-weight: 300;
       line-height: 1.65;
-      white-space: pre-line; /* Сохраняет перенос строк и абзацев */
     }
 
     .section-header {
@@ -240,11 +241,48 @@
       letter-spacing: 0.5px;
     }
 
+    /* Стили форматирования Markdown текста */
     .post-body {
       color: var(--text);
       margin: 0 0 1.5rem 0;
       font-weight: 300;
-      white-space: pre-line; /* Сохраняет перенос строк в текстах постов */
+    }
+
+    .post-body p { margin: 0 0 0.8rem 0; }
+    .post-body p:last-child { margin-bottom: 0; }
+    .post-body strong, .bio strong { font-weight: 600; color: #fff; }
+    .post-body em, .bio em { font-style: italic; color: #d0d4dc; }
+    .post-body del { text-decoration: line-through; opacity: 0.6; }
+    .post-body u { text-decoration: underline; text-underline-offset: 3px; }
+    
+    .post-body h1, .post-body h2, .post-body h3, .post-body h4 {
+      color: var(--accent);
+      margin: 1.2rem 0 0.5rem;
+      font-family: 'Cinzel', serif;
+    }
+    .post-body h1 { font-size: 1.3rem; }
+    .post-body h2 { font-size: 1.15rem; }
+    .post-body h3 { font-size: 1.05rem; }
+
+    .post-body a, .bio a {
+      color: var(--accent);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .post-body a:hover, .bio a:hover { opacity: 0.8; }
+
+    .post-body ul, .post-body ol {
+      margin: 0.5rem 0 1rem 1.2rem;
+      padding: 0;
+    }
+    .post-body li { margin-bottom: 0.3rem; }
+
+    .post-body blockquote {
+      border-left: 3px solid var(--accent);
+      padding-left: 1rem;
+      margin: 1rem 0;
+      color: var(--text-muted);
+      font-style: italic;
     }
 
     .media-container {
@@ -342,7 +380,7 @@
       <div class="hero-info">
         <h1 id="author-name">Михаил Тарбагаев</h1>
         <div class="subtitle" id="author-subtitle">Композитор & Саунд-продюсер</div>
-        <p class="bio" id="author-bio"></p>
+        <div class="bio" id="author-bio"></div>
       </div>
     </header>
 
@@ -368,6 +406,12 @@
   <script>
     const GITHUB_USER = "mrmihastro";
     const GITHUB_REPO = "portfolio";
+
+    // Настройка marked: сохраняем переносы строк
+    marked.setOptions({
+      breaks: true,
+      gfm: true
+    });
 
     function getYouTubeId(url) {
       if (!url) return null;
@@ -399,7 +443,7 @@
           document.title = profile.name;
         }
         if (profile.subtitle) document.getElementById('author-subtitle').textContent = profile.subtitle;
-        if (profile.bio) document.getElementById('author-bio').textContent = profile.bio;
+        if (profile.bio) document.getElementById('author-bio').innerHTML = marked.parse(profile.bio);
         if (profile.avatar) document.getElementById('author-avatar').src = profile.avatar;
       } catch (err) {
         console.log('Используются стандартные данные шапки');
@@ -474,6 +518,9 @@
         `;
       }
 
+      // Парсим Markdown в HTML для тела поста
+      const bodyHtml = post.body ? marked.parse(post.body) : '';
+
       const card = document.createElement('div');
       card.className = 'card';
       card.style.animationDelay = `${delay}s`;
@@ -483,7 +530,7 @@
           <span class="post-badge">${getBadgeLabel(post.media_type)}</span>
         </div>
         <h3>${post.title}</h3>
-        ${post.body ? `<p class="post-body">${post.body}</p>` : ''}
+        ${bodyHtml ? `<div class="post-body">${bodyHtml}</div>` : ''}
         ${mediaHtml}
       `;
       container.appendChild(card);
