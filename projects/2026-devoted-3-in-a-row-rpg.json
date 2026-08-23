@@ -1,10 +1,11 @@
 {
+  "link_url": "https://rpgmakerunion.ru/game/devoted.59492732",
   "order": 1,
   "link_text": "Смотреть проект →",
-  "image": "https://rpgmakerunion.ru/game-images/59492732/devoted-screenshot-5-rpg-maker-game.jpg?1",
-  "title": "DEVOTED (3-in-a-row RPG)",
   "role": "Саундтрек, саунд-дизайн, гейм-дизайн",
+  "audio": "/uploads/м.-тарбагаев-the-road-not-taken-devoted-ost-.mp3",
+  "title": "DEVOTED (3-in-a-row RPG)",
+  "image": "https://rpgmakerunion.ru/game-images/59492732/devoted-screenshot-5-rpg-maker-game.jpg?1",
   "description": "* **14 разнохарактерных треков**: от tribal-стилистики до symphonic metal стилизации\n* **Полное звуковое оформление** интерфейса и взаимодействий персонажа с миром (шаги, получение и нанесение урона, применение способностей)",
-  "link_url": "https://rpgmakerunion.ru/game/devoted.59492732",
-  "audio": "/uploads/м.-тарбагаев-the-road-not-taken-devoted-ost-.mp3"
+  "category": "games"
 }
