@@ -82,6 +82,7 @@
       100% { transform: translateY(-130vh) scale(1.2); opacity: 0; }
     }
 
+    /* Hero экран */
     .hero-section {
       min-height: 100vh;
       display: flex;
@@ -124,14 +125,14 @@
 
     .avatar-wrapper {
       width: 100%;
-      height: 300px;
+      height: 320px;
       flex-shrink: 0;
       position: relative;
     }
 
     @media (min-width: 768px) {
       .avatar-wrapper {
-        width: 310px;
+        width: 320px;
         height: auto;
       }
     }
@@ -154,7 +155,7 @@
 
     .hero-info h1 {
       font-family: 'Cinzel', serif;
-      margin: 0 0 0.5rem;
+      margin: 0 0 0.4rem;
       font-size: 2.5rem;
       font-weight: 700;
       letter-spacing: 0.5px;
@@ -166,16 +167,69 @@
       font-size: 0.9rem;
       text-transform: uppercase;
       letter-spacing: 2.5px;
-      margin-bottom: 1.4rem;
+      margin-bottom: 1.2rem;
       font-weight: 600;
     }
 
     .hero-info .bio {
       color: var(--text-muted);
-      margin: 0;
-      font-size: 1rem;
+      margin: 0 0 1.8rem 0;
+      font-size: 0.95rem;
       font-weight: 300;
-      line-height: 1.7;
+      line-height: 1.65;
+    }
+
+    /* Панель действий в шапке: соцсети + кнопка "Связаться" */
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .btn-contact-hero {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      color: #0c0d10;
+      font-family: 'Cinzel', serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 0.6rem 1.4rem;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 15px rgba(212, 175, 55, 0.25);
+    }
+
+    .btn-contact-hero:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+    }
+
+    .social-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.55rem 1rem;
+      background: #181a20;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .social-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: translateY(-2px);
     }
 
     .scroll-indicator {
@@ -438,34 +492,6 @@
       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
     }
 
-    .social-links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.8rem;
-      margin-bottom: 2.5rem;
-    }
-
-    .social-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.6rem 1.2rem;
-      background: #181a20;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text);
-      text-decoration: none;
-      font-size: 0.9rem;
-      font-weight: 500;
-      transition: all 0.2s ease;
-    }
-
-    .social-btn:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-      transform: translateY(-2px);
-    }
-
     .contact-form {
       display: flex;
       flex-direction: column;
@@ -574,6 +600,12 @@
         <h1 id="author-name">Михаил Тарбагаев</h1>
         <div class="subtitle" id="author-subtitle">Композитор & Саунд-продюсер</div>
         <div class="bio" id="author-bio"></div>
+        
+        <!-- Кнопки действий: "Связаться" + Соцсети -->
+        <div class="hero-actions">
+          <a href="#contact-section" class="btn-contact-hero">Связаться</a>
+          <div id="hero-social-links" style="display: inline-flex; flex-wrap: wrap; gap: 0.6rem;"></div>
+        </div>
       </div>
     </header>
 
@@ -614,15 +646,12 @@
     </div>
 
     <!-- Секция Контактов -->
-    <div class="section-header">
+    <div class="section-header" id="contact-section">
       <h2 class="section-title">Связаться</h2>
       <div class="section-line"></div>
     </div>
 
     <div class="contact-card">
-      <div class="social-links" id="social-links-container"></div>
-
-      <!-- Форма Formspree -->
       <form id="contact-form" action="https://formspree.io/f/xvkpyjzg" method="POST" class="contact-form">
         <div class="form-group">
           <label for="name">Ваше имя</label>
@@ -656,7 +685,7 @@
 
     marked.setOptions({ breaks: true, gfm: true });
 
-    // AJAX отправка в Formspree
+    // AJAX отправка Formspree
     const contactForm = document.getElementById('contact-form');
     const submitBtn = document.getElementById('submit-btn');
     const formStatus = document.getElementById('form-status');
@@ -776,13 +805,13 @@
         if (profile.bio) document.getElementById('author-bio').innerHTML = marked.parse(profile.bio);
         if (profile.avatar) document.getElementById('author-avatar').src = profile.avatar;
 
-        const socialContainer = document.getElementById('social-links-container');
+        // Выводим кнопки соцсетей в шапку сайта
+        const socialContainer = document.getElementById('hero-social-links');
         let socialHtml = '';
         if (profile.telegram) socialHtml += `<a href="${profile.telegram}" target="_blank" rel="noopener" class="social-btn">Telegram</a>`;
         if (profile.vk) socialHtml += `<a href="${profile.vk}" target="_blank" rel="noopener" class="social-btn">ВКонтакте</a>`;
         if (profile.soundcloud) socialHtml += `<a href="${profile.soundcloud}" target="_blank" rel="noopener" class="social-btn">SoundCloud</a>`;
         if (profile.youtube) socialHtml += `<a href="${profile.youtube}" target="_blank" rel="noopener" class="social-btn">YouTube</a>`;
-        if (profile.email) socialHtml += `<a href="mailto:${profile.email}" class="social-btn">${profile.email}</a>`;
         socialContainer.innerHTML = socialHtml;
 
       } catch (err) {
