@@ -6,7 +6,6 @@ media_folder: "uploads"
 public_folder: "/uploads"
 
 collections:
-  # Коллекция для редактирования шапки и профиля
   - name: "settings"
     label: "Настройки сайта"
     files:
@@ -16,10 +15,9 @@ collections:
         fields:
           - { label: "Имя Фамилия", name: "name", widget: "string", default: "Михаил Тарбагаев" }
           - { label: "Специализация / Подзаголовок", name: "subtitle", widget: "string", default: "Композитор & Саунд-продюсер" }
-          - { label: "Биография / О себе", name: "bio", widget: "text" }
+          - { label: "Биография / О себе", name: "bio", widget: "markdown" }
           - { label: "Фотография (Аватар)", name: "avatar", widget: "image", required: false }
 
-  # Коллекция постов
   - name: "posts"
     label: "Публикации"
     folder: "posts"
@@ -30,7 +28,7 @@ collections:
       - { label: "Порядковый номер (1 - самый верхний)", name: "order", widget: "number", default: 1, value_type: "int" }
       - { label: "Заголовок", name: "title", widget: "string" }
       - { label: "Дата публикации", name: "date", widget: "datetime", date_format: "DD.MM.YYYY", time_format: false }
-      - { label: "Текст записи", name: "body", widget: "text", required: false }
+      - { label: "Текст записи (Форматированный)", name: "body", widget: "markdown", required: false }
       - label: "Тип медиа"
         name: "media_type"
         widget: "select"
