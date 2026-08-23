@@ -6,6 +6,20 @@ media_folder: "uploads"
 public_folder: "/uploads"
 
 collections:
+  # Коллекция для редактирования шапки и профиля
+  - name: "settings"
+    label: "Настройки сайта"
+    files:
+      - label: "Профиль автора"
+        name: "profile"
+        file: "settings/profile.json"
+        fields:
+          - { label: "Имя Фамилия", name: "name", widget: "string", default: "Михаил Тарбагаев" }
+          - { label: "Специализация / Подзаголовок", name: "subtitle", widget: "string", default: "Композитор & Саунд-продюсер" }
+          - { label: "Биография / О себе", name: "bio", widget: "text" }
+          - { label: "Фотография (Аватар)", name: "avatar", widget: "image", required: false }
+
+  # Коллекция постов
   - name: "posts"
     label: "Публикации"
     folder: "posts"
@@ -13,12 +27,13 @@ collections:
     slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
     format: "json"
     fields:
+      - { label: "Порядковый номер (1 - самый верхний)", name: "order", widget: "number", default: 1, value_type: "int" }
       - { label: "Заголовок", name: "title", widget: "string" }
       - { label: "Дата публикации", name: "date", widget: "datetime", date_format: "DD.MM.YYYY", time_format: false }
-      - { label: "Текст записи", name: "body", widget: "text" }
+      - { label: "Текст записи", name: "body", widget: "text", required: false }
       - label: "Тип медиа"
         name: "media_type"
         widget: "select"
         options: ["none", "musescore", "youtube", "audio", "image"]
         default: "none"
-      - { label: "Ссылка на медиа / Embed URL", name: "media_url", widget: "string", required: false }
+      - { label: "Медиафайл или Ссылка (MuseScore/YouTube/MP3)", name: "media_url", widget: "string", required: false }
