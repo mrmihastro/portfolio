@@ -7,5 +7,7 @@
   "title": "CHRONOCRAWL (Dungeon Crawler)",
   "image": "/uploads/chronocrawl-screenshot-1-rpg-maker-game.jpg",
   "description": "* **8 стилизованных под ретро-эстетику** треков\n* Звуковое оформление, **подражающее играм эпохи PSone/PS 2** и Nintendo DS",
-  "category": "games"
+  "category": "games",
+  "audio_title": "Peaceful Future (CHRONOCRAWL OST)",
+  "audio_duration": 140.04
 }

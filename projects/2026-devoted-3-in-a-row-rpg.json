@@ -7,5 +7,7 @@
   "title": "DEVOTED (Match-3 RPG)",
   "image": "/uploads/devoted-screenshot-5-rpg-maker-game.jpg",
   "description": "* **14 разнохарактерных треков**: от tribal-стилистики до symphonic metal стилизации\n* **Полное звуковое оформление** интерфейса и взаимодействий персонажа с миром (шаги, получение и нанесение урона, применение способностей)",
-  "category": "games"
+  "category": "games",
+  "audio_title": "The Road Not Taken (DEVOTED OST)",
+  "audio_duration": 200.04
 }
