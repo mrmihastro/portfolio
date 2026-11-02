@@ -23,6 +23,17 @@ collections:
           - { label: "YouTube (ссылка)", name: "youtube", widget: "string", required: false }
           - { label: "Публичный Email для связи", name: "email", widget: "string", required: false }
 
+      - label: "Озвучка и звуки — папки"
+        name: "sounds"
+        file: "settings/sounds.json"
+        fields:
+          - label: "Папки портфолио"
+            name: "items"
+            widget: "list"
+            fields:
+              - { label: "Название", name: "title", widget: "string" }
+              - { label: "Ссылка на папку Google Диска", name: "url", widget: "string" }
+
   - name: "projects"
     label: "Проекты (Портфолио)"
     folder: "projects"
@@ -43,6 +54,8 @@ collections:
       - { label: "Роль / Подзаголовок", name: "role", widget: "string", required: false }
       - { label: "Обложка / Кадр проекта", name: "image", widget: "image" }
       - { label: "Аудио-файл трека (MP3)", name: "audio", widget: "file", required: false }
+      - { label: "Длительность записи (секунды)", name: "audio_duration", widget: "number", value_type: "float", required: false }
+      - { label: "Название музыкальной композиции", name: "audio_title", widget: "string", required: false }
       - { label: "Описание участия в проекте", name: "description", widget: "markdown" }
       - { label: "Текст на ссылке", name: "link_text", widget: "string", default: "Смотреть проект →" }
       - { label: "Ссылка на проект (Steam / YouTube / Сайт)", name: "link_url", widget: "string", required: false }
