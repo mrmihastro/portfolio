@@ -237,3 +237,89 @@ test('waveform generation refuses symlink escapes from uploads', async t => {
   await writeFile(join(dir, 'settings/waveforms.json'), JSON.stringify({[url]:{...record,sha256:createHash('sha256').update(bytes).digest('hex')}}));
   assert.deepEqual((await build(dir)).waveforms, {});
 });
+
+
+test('repeatable blog audio supports zero, one and many local tracks without mutating posts', async t => {
+  const dir = await fixture(t);
+  await mkdir(join(dir, 'uploads'));
+  const postPath = join(dir, 'posts/audio-list.json');
+  const sources = Array.from({length:5}, (_, i) => `/uploads/blog-${i}.wav`);
+  for (const [i, url] of sources.entries()) await writeFile(join(dir, url.slice(1)), realWav(0.25 + i * 0.1));
+  for (const count of [0, 1, sources.length]) {
+    const post = {title:'Audio list',audio_tracks:sources.slice(0, count).map((audio, i) => ({title:`Track ${i}`,audio}))};
+    const json = JSON.stringify(post);
+    await writeFile(postPath, json);
+    const data = await build(dir);
+    assert.deepEqual(Object.keys(data.waveforms).sort(), sources.slice(0, count).sort());
+    for (const url of sources.slice(0, count)) assert.equal(data.waveforms[url].peaks.length, 220);
+    assert.deepEqual(embedded(await readFile(join(dir, 'dist/index.html'), 'utf8')).waveforms, data.waveforms);
+    assert.equal(await readFile(postPath, 'utf8'), json);
+  }
+});
+
+test('blog track replacement at the same URL regenerates stale cached waves automatically', async t => {
+  const dir = await fixture(t);
+  await mkdir(join(dir, 'uploads'));
+  const url = '/uploads/blog-replacement.wav';
+  await writeFile(join(dir, 'posts/replace.json'), JSON.stringify({title:'Replacement',audio_tracks:[{title:'Track',audio:url}]}));
+  await writeFile(join(dir, url.slice(1)), realWav(0.5));
+  const first = (await build(dir)).waveforms[url];
+  await writeFile(join(dir, 'settings/waveforms.json'), JSON.stringify({[url]:first}));
+  const bytes = realWav(0.75, true);
+  await writeFile(join(dir, url.slice(1)), bytes);
+  const second = (await build(dir)).waveforms[url];
+  assert.equal(second.sha256, createHash('sha256').update(bytes).digest('hex'));
+  assert.notEqual(first.sha256, second.sha256);
+  assert.equal(second.duration, 0.75);
+  assert.notDeepEqual(first.peaks, second.peaks);
+});
+
+test('legacy and repeatable blog audio share project URL deduplication and reject invalid optional values', async t => {
+  const dir = await fixture(t);
+  await mkdir(join(dir, 'uploads'));
+  const url = '/uploads/shared.wav';
+  await writeFile(join(dir, url.slice(1)), realWav(0.5));
+  await writeFile(join(dir, 'projects/shared.json'), JSON.stringify({title:'Shared project',audio:url}));
+  await writeFile(join(dir, 'posts/legacy.json'), JSON.stringify({title:'Legacy',media_type:'audio',media_url:url}));
+  await writeFile(join(dir, 'posts/repeatable.json'), JSON.stringify({title:'Repeatable',audio_tracks:[
+    null, false, 42, 'bad', [], {}, {audio:42}, {audio:'https://example.com/remote.wav'},
+    {audio:'/uploads/../settings/profile.json'}, {title:'Shared',audio:url}, {title:'Repeated',audio:url},
+  ]}));
+  for (const [i, invalid] of [null, false, 42, {}, 'not a list'].entries()) {
+    await writeFile(join(dir, `posts/invalid-${i}.json`), JSON.stringify({title:`Invalid ${i}`,audio_tracks:invalid}));
+  }
+  assert.deepEqual(Object.keys((await build(dir)).waveforms), [url]);
+  // A shared bad upload would produce one warning per decoder attempt, not one
+  // per referring card; ensure project + legacy + repeated entries decode once.
+  await writeFile(join(dir, url.slice(1)), 'invalid replacement');
+  const warnings = [];
+  const originalWarn = console.warn;
+  console.warn = (...args) => warnings.push(args.join(' '));
+  try { assert.deepEqual((await build(dir)).waveforms, {}); }
+  finally { console.warn = originalWarn; }
+  assert.equal(warnings.filter(message => message.includes(url)).length, 1);
+});
+
+test('legacy local post audio gets a waveform without project or repeatable references', async t => {
+  const dir = await fixture(t);
+  await mkdir(join(dir, 'uploads'));
+  const url = '/uploads/legacy-only.wav';
+  await writeFile(join(dir, url.slice(1)), realWav(0.3));
+  await writeFile(join(dir, 'posts/legacy-only.json'), JSON.stringify({title:'Old post',media_type:'audio',media_url:url}));
+  const data = await build(dir);
+  assert.equal(data.waveforms[url].duration, 0.3);
+  assert.equal(data.waveforms[url].peaks.length, 220);
+});
+
+test('blog CMS audio list has title/file fields and no fixed item cap', async () => {
+  const config = await readFile(join(root, 'admin/config.yml'), 'utf8');
+  const posts = config.slice(config.indexOf('  - name: "posts"'));
+  const list = posts.slice(posts.indexOf('name: "audio_tracks"'));
+  assert.match(list, /widget: "list"/);
+  assert.match(list, /required: false/);
+  assert.match(list, /name: "title", widget: "string"/);
+  assert.match(list, /name: "audio", widget: "file"/);
+  assert.doesNotMatch(list, /\b(?:max|maxItems):/);
+  assert.match(posts, /name: "media_type"/);
+  assert.match(posts, /name: "media_url"/);
+});
