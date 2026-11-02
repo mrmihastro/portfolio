@@ -163,6 +163,11 @@
     @media(max-width:900px) { .dock-volume { display:none; } }
     @media(max-width:650px) { .dock-inner { min-height:150px;padding:15px 20px calc(13px + env(safe-area-inset-bottom));gap:10px; } .dock-top { gap:12px; } .main-play { width:42px;height:42px;min-width:42px; } .dock-tools { gap:0; } .dock-tools .icon-button { min-width:30px;width:30px;font-size:22px; } .dock-close { margin-left:2px; } .dock-label { font-size:.64rem; } #featured-title { font-size:.8rem;line-height:1.3; } .waveform-track { height:55px; } .player-open { padding-bottom:230px; } }
     .main-play { display:grid;place-items:center; } .main-play svg { width:20px;height:20px;display:block;fill:currentColor;pointer-events:none; }
+    .post-audio-list { margin-top:22px;border-top:1px solid var(--border); }
+    .blog-track { display:flex;align-items:center;gap:13px;width:100%;min-height:64px;padding:13px 0;text-align:left;background:none;border:0;border-bottom:1px solid var(--border);color:var(--text);cursor:pointer;font:inherit; }
+    .blog-track:last-child { border-bottom:0; } .blog-track-title { font-size:.9rem;line-height:1.5;overflow-wrap:anywhere; }
+    .blog-track .track-play { width:34px;height:34px; } .blog-track svg { width:17px;height:17px;fill:currentColor;display:block; }
+    .blog-track:hover,.blog-track[aria-current="true"] { color:var(--accent); } .blog-track[aria-current="true"] .track-play { background:var(--accent);color:#111; }
   </style>
 </head>
 <body id="page-body">
@@ -523,7 +528,8 @@
     const toggle = document.getElementById('player-toggle');
     const seek = document.getElementById('player-seek');
     let lastTrigger = null;
-    let musicTracks = [], activeTrack = -1, playRequest = 0;
+    let musicTracks = [], projectTracks = [], activeTrack = -1, playRequest = 0;
+    const postTrackButtons = [];
     function formatTime(value) { value = Number.isFinite(value) && value > 0 ? Math.floor(value) : 0; return Math.floor(value / 60) + ':' + String(value % 60).padStart(2,'0'); }
     function updateProgress() {
       const duration = featuredAudio.duration;
@@ -580,7 +586,8 @@
       }
       featuredTitle.textContent = track.title;
       featuredAudio.setAttribute('aria-label', track.title);
-      trackButtons.forEach((button, i) => button.setAttribute('aria-current', String(i === index)));
+      trackButtons.forEach((button, i) => button.setAttribute('aria-current', String(musicTracks === projectTracks && i === index)));
+      postTrackButtons.forEach(item => item.button.setAttribute('aria-current', String(musicTracks === item.queue && index === item.index)));
       featuredStatus.textContent = '';
       if (play) {
         dock.hidden = false; document.getElementById('page-body').classList.add('player-open');
@@ -590,6 +597,14 @@
           if (request === playRequest) featuredStatus.textContent = 'Не удалось начать воспроизведение. Нажмите Play для повтора.';
         });
       }
+    }
+    function selectQueue(queue, index, trigger) {
+      if (!queue.length) return;
+      if (musicTracks !== queue) { musicTracks = queue; activeTrack = -1; }
+      if (trigger) lastTrigger = trigger;
+      document.getElementById('prev-track').disabled = queue.length < 2;
+      document.getElementById('next-track').disabled = queue.length < 2;
+      selectTrack(index, true);
     }
     document.getElementById('prev-track').addEventListener('click', () => selectTrack(activeTrack - 1, true));
     document.getElementById('next-track').addEventListener('click', () => selectTrack(activeTrack + 1, true));
@@ -610,9 +625,9 @@
       }
       const button = event.target.closest && event.target.closest('[data-play-url]');
       if (!button) return;
-      const index = musicTracks.findIndex(track => track.audio === button.dataset.playUrl);
+      const index = projectTracks.findIndex(track => track.audio === button.dataset.playUrl);
       if (index >= 0) {
-        lastTrigger = button; selectTrack(index, true);
+        selectQueue(projectTracks, index, button);
         toggle.focus({ preventScroll:true });
       }
     });
@@ -620,14 +635,15 @@
       const container = document.getElementById('selected-container');
       container.innerHTML = '';
       trackButtons.length = 0;
-      musicTracks = allProjects.map(p => ({ title:p.audio_title || p.title, duration:p.audio_duration, audio:p.audio || p.audio_url || p.media_url || p.track || '' }))
+      projectTracks = allProjects.map(p => ({ title:p.audio_title || p.title, duration:p.audio_duration, audio:p.audio || p.audio_url || p.media_url || p.track || '' }))
         .filter(track => track.audio && !/drive.google.com|soundcloud.com/.test(track.audio));
-      musicTracks.forEach((track, index) => {
+      musicTracks = projectTracks;
+      projectTracks.forEach((track, index) => {
         const button = document.createElement('button'); button.type = 'button'; button.className = 'track-button';
         button.innerHTML = `<span class="track-play" aria-hidden="true">▶</span><span class="track-name">${escapeHtml(track.title)}</span><span class="track-duration" aria-hidden="true">${track.duration ? formatTime(track.duration) : ''}</span>`;
         button.setAttribute('aria-label', 'Слушать: ' + track.title);
         button.setAttribute('aria-controls', 'featured-audio');
-        button.addEventListener('click', () => { lastTrigger = button; selectTrack(index, true); });
+        button.addEventListener('click', () => selectQueue(projectTracks, index, button));
         container.appendChild(button); trackButtons.push(button);
       });
       document.getElementById('prev-track').disabled = !musicTracks.length;
@@ -653,6 +669,7 @@
       const container = document.getElementById('posts-container');
       try {
         const postsData = readContent('posts');
+        postTrackButtons.length = 0;
 
         postsData.sort((a, b) => (Number(a.order) || 999) - (Number(b.order) || 999));
         container.innerHTML = '';
@@ -668,6 +685,41 @@
       }
     }
 
+    function safeAudioUrl(value) {
+      if (typeof value !== 'string') return '';
+      value = value.trim();
+      if (!value || /[\u0000-\u001f\u007f<>"']/.test(value)) return '';
+      if (value.startsWith('/uploads/')) {
+        let decoded; try { decoded = decodeURIComponent(value); } catch (_) { return ''; }
+        if (decoded.includes('\\') || /(?:^|\/)\.\.?(?:\/|$)/.test(decoded)) return '';
+        return value;
+      }
+      return /^https:\/\/[^\s/]+(?:\/|$)/i.test(value) ? value : '';
+    }
+    function isEmbeddedAudio(url) { return /^https:\/\/(?:drive\.google\.com|(?:www\.)?soundcloud\.com)\//i.test(url || ''); }
+    function postAudioTracks(post) {
+      const tracks = (Array.isArray(post.audio_tracks) ? post.audio_tracks : []).map((item, index) => {
+        const audio = item && safeAudioUrl(item.audio);
+        return audio && !isEmbeddedAudio(audio) ? { audio, title:typeof item.title === 'string' && item.title.trim() ? item.title : 'Аудиозапись ' + (index + 1) } : null;
+      }).filter(Boolean);
+      const legacy = post.media_type === 'audio' && safeAudioUrl(post.media_url);
+      if (legacy && !isEmbeddedAudio(legacy) && !tracks.some(track => track.audio === legacy)) tracks.unshift({ audio:legacy, title:post.audio_title || post.title });
+      return tracks;
+    }
+    function appendPostAudio(card, post) {
+      const queue = postAudioTracks(post);
+      if (!queue.length) return;
+      const list = document.createElement('div'); list.className = 'post-audio-list';
+      list.setAttribute('role', 'group'); list.setAttribute('aria-label', 'Аудиозаписи: ' + post.title);
+      queue.forEach((track, index) => {
+        const button = document.createElement('button'); button.type = 'button'; button.className = 'blog-track';
+        button.setAttribute('aria-label', 'Слушать: ' + track.title); button.setAttribute('aria-controls', 'featured-audio'); button.setAttribute('aria-current','false');
+        button.innerHTML = `<span class="track-play" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M8 5v14l11-7z"/></svg></span><span class="blog-track-title">${escapeHtml(track.title)}</span>`;
+        button.addEventListener('click', () => { selectQueue(queue, index, button); toggle.focus({preventScroll:true}); });
+        postTrackButtons.push({button, queue, index}); list.appendChild(button);
+      });
+      card.appendChild(list);
+    }
     function renderCard(container, post, delay) {
       let mediaHtml = '';
 
@@ -693,7 +745,7 @@
             </div>
           `;
         }
-      } else if (post.media_type === 'audio' && post.media_url) {
+      } else if (post.media_type === 'audio' && safeAudioUrl(post.media_url) && isEmbeddedAudio(post.media_url)) {
         mediaHtml = `<div class="audio-wrapper">${renderAudioPlayer(post.media_url)}</div>`;
       } else if (post.media_type === 'image' && post.media_url) {
         mediaHtml = `
@@ -710,13 +762,14 @@
       card.style.animationDelay = `${delay}s`;
       card.innerHTML = `
         <div class="card-meta">
-          <span class="post-date">${post.date || ''}</span>
+          <span class="post-date">${escapeHtml(post.date || '')}</span>
           <span class="post-badge">${getBadgeLabel(post.media_type)}</span>
         </div>
-        <h3>${post.title}</h3>
+        <h3>${escapeHtml(post.title)}</h3>
         ${bodyHtml ? `<div class="post-body">${bodyHtml}</div>` : ''}
         ${mediaHtml}
       `;
+      appendPostAudio(card, post);
       container.appendChild(card);
     }
 
