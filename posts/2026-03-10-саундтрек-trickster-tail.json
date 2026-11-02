@@ -1,0 +1,29 @@
+{
+  "order": 1,
+  "media_type": "none",
+  "audio_tracks": [
+    {
+      "audio": "/uploads/venus-temple.mp3",
+      "title": "Venus Temple"
+    },
+    {
+      "audio": "/uploads/cat-town.mp3",
+      "title": "Cat Town"
+    },
+    {
+      "audio": "/uploads/trickster-fight.mp3",
+      "title": "Trap Fight"
+    },
+    {
+      "audio": "/uploads/magic-fight.mp3",
+      "title": "Caster Fight"
+    },
+    {
+      "audio": "/uploads/melee-fight.mp3",
+      "title": "Melee Fight"
+    }
+  ],
+  "title": "Саундтрек Trickster Tail",
+  "date": "03.11.2026",
+  "body": "В очередной раз поучаствовал в создании саундтрека для игры товарища. \n\nВстречайте - несколько треков из Immersive-sim RPG **Trickster Tail!**"
+}
