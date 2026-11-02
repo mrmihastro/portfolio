@@ -119,7 +119,7 @@ test('profile, every category, order, media and posts render with all network re
   assert.equal(count, data.projects.length);
   const posts = data.posts.sort((a,b) => (Number(a.order)||999)-(Number(b.order)||999));
   assert.equal(get('posts-container').children.length, posts.length);
-  posts.forEach((post, i) => assert.ok(get('posts-container').children[i].innerHTML.includes(post.title)));
+  posts.forEach((post, i) => assert.ok(get('posts-container').children[i].innerHTML.includes(escapeHtml(post.title))));
   assert.deepEqual(requests, []);
 });
 
@@ -845,4 +845,111 @@ test('scroll inputs stay native immediately after the triggering gesture while r
     assert.equal(app.animations.some(animation => animation.cancelled), false);
     assert.equal(app.browserWindow.scrollCalls.length, initialScrollCalls);
   }
+});
+
+function blogButtons(app, index = 0) {
+  return app.get('posts-container').children[index].children.find(child => child.className === 'post-audio-list')?.children || [];
+}
+
+test('blog supports zero and many repeatable audio tracks without removing existing video or body', async t => {
+  const { data, html } = await built(t);
+  const posts = [
+    { title: 'No audio', body: 'Existing body', media_type: 'youtube', media_url: 'https://www.youtube.com/watch?v=bZbpqVXaOog', order: 1 },
+    { title: 'Many tracks', body: 'Keep this text', audio_tracks: Array.from({ length: 25 }, (_, i) => ({ title: `Track ${i + 1}`, audio: `/uploads/blog-${i}.mp3` })), order: 2 },
+  ];
+  const app = client(html, JSON.stringify({ ...data, posts }));
+  assert.equal(blogButtons(app, 0).length, 0);
+  assert.equal(blogButtons(app, 1).length, 25);
+  assert.match(app.get('posts-container').children[0].innerHTML, /youtube-nocookie\.com\/embed\/bZbpqVXaOog/);
+  assert.ok(app.get('posts-container').children[0].innerHTML.includes('Existing body'));
+  assert.ok(app.get('posts-container').children[1].innerHTML.includes('Keep this text'));
+  const buttons = blogButtons(app, 1);
+  buttons.forEach((button, index) => {
+    assert.equal(button.attributes['aria-label'], `Слушать: Track ${index + 1}`);
+    assert.equal(button.attributes['aria-controls'], 'featured-audio');
+  });
+  buttons[24].listeners.click();
+  assert.equal(app.get('featured-audio').src, '/uploads/blog-24.mp3');
+  app.get('next-track').listeners.click();
+  assert.equal(app.get('featured-audio').src, '/uploads/blog-0.mp3');
+  assert.deepEqual(app.requests, []);
+});
+
+test('blog queues stay per-post and project controls restore project queue with one audio player', async t => {
+  const { data, html } = await built(t);
+  const posts = [
+    { title: 'Post A', order: 1, audio_tracks: [{ title: 'A1', audio: '/uploads/a1.mp3' }, { title: 'A2', audio: '/uploads/a2.mp3' }] },
+    { title: 'Post B', order: 2, audio_tracks: [{ title: 'B1', audio: '/uploads/b1.mp3' }, { title: 'B2', audio: '/uploads/b2.mp3' }] },
+  ];
+  const app = client(html, JSON.stringify({ ...data, posts }));
+  const audio = app.get('featured-audio'), other = app.addMedia(); other.paused = false;
+  const a = blogButtons(app, 0), b = blogButtons(app, 1);
+  a[1].listeners.click();
+  assert.equal(audio.src, '/uploads/a2.mp3');
+  assert.equal(other.paused, true);
+  assert.equal(app.get('player-toggle').focused, true);
+  app.get('next-track').listeners.click(); assert.equal(audio.src, '/uploads/a1.mp3');
+  app.get('prev-track').listeners.click(); assert.equal(audio.src, '/uploads/a2.mp3');
+  b[0].listeners.click(); assert.equal(audio.src, '/uploads/b1.mp3');
+  assert.equal(a[1].attributes['aria-current'], 'false');
+  assert.equal(b[0].attributes['aria-current'], 'true');
+  app.get('prev-track').listeners.click(); assert.equal(audio.src, '/uploads/b2.mp3');
+  app.get('player-close').listeners.click(); assert.equal(b[0].focused, true);
+  const projects = [...data.projects].sort((a,b) => (Number(a.order)||999)-(Number(b.order)||999));
+  app.get('selected-container').children[0].listeners.click(); assert.equal(audio.src, projects[0].audio);
+  assert.ok(b.every(button => button.attributes['aria-current'] === 'false'));
+  app.get('next-track').listeners.click(); assert.equal(audio.src, projects[1].audio);
+  b[0].listeners.click();
+  const project = projects[2];
+  app.documentListeners.click({ target: { closest: selector => selector === '[data-play-url]' ? { dataset: { playUrl: project.audio } } : null } });
+  assert.equal(audio.src, project.audio);
+  app.get('next-track').listeners.click(); assert.equal(audio.src, projects[3].audio);
+});
+
+test('single blog audio works without projects and disables previous/next transport', async t => {
+  const { data, html } = await built(t);
+  const app = client(html, JSON.stringify({ ...data, projects: [], posts: [{ title: 'Solo', audio_tracks: [{ title: 'Solo sample', audio: '/uploads/solo.wav' }] }] }));
+  blogButtons(app)[0].listeners.click();
+  assert.equal(app.get('featured-audio').src, '/uploads/solo.wav');
+  assert.equal(app.get('featured-title').textContent, 'Solo sample');
+  assert.equal(app.get('player-dock').hidden, false);
+  assert.equal(app.get('featured-audio').paused, false);
+  assert.equal(app.get('prev-track').disabled, true);
+  assert.equal(app.get('next-track').disabled, true);
+});
+
+test('legacy direct blog audio deduplicates with list while Drive and SoundCloud embeds remain', async t => {
+  const { data, html } = await built(t);
+  const posts = [
+    { title: 'Legacy', order: 1, media_type: 'audio', media_url: '/uploads/legacy.mp3', audio_tracks: [{ title: 'More', audio: '/uploads/more.mp3' }] },
+    { title: 'Duplicate', order: 2, media_type: 'audio', media_url: '/uploads/legacy.mp3', audio_tracks: [{ title: 'Named sample', audio: '/uploads/legacy.mp3' }] },
+    { title: 'Drive', order: 3, media_type: 'audio', media_url: 'https://drive.google.com/file/d/abc123/view', audio_tracks: [{ title: 'Local', audio: '/uploads/local.mp3' }] },
+    { title: 'SoundCloud', order: 4, media_type: 'audio', media_url: 'https://soundcloud.com/artist/track' },
+  ];
+  const app = client(html, JSON.stringify({ ...data, posts }));
+  assert.equal(blogButtons(app, 0).length, 2);
+  blogButtons(app, 0)[0].listeners.click(); assert.equal(app.get('featured-audio').src, '/uploads/legacy.mp3');
+  assert.equal(blogButtons(app, 1).length, 1);
+  assert.equal(blogButtons(app, 1)[0].attributes['aria-label'], 'Слушать: Named sample');
+  assert.equal(blogButtons(app, 2).length, 1);
+  assert.match(app.get('posts-container').children[2].innerHTML, /drive\.google\.com\/file\/d\/abc123\/preview/);
+  assert.equal(blogButtons(app, 3).length, 0);
+  assert.match(app.get('posts-container').children[3].innerHTML, /w\.soundcloud\.com\/player/);
+});
+
+test('blog audio escapes titles and skips unsafe URLs while accepting direct HTTPS and uploads', async t => {
+  const { data, html } = await built(t);
+  const invalid = ['javascript:alert(1)', 'data:audio/wav;base64,AAAA', '//evil.example/a.mp3', '/uploads/../settings/profile.json', '/uploads/%2e%2e/secret', '/uploads/%5csecret', '/uploads/%zz', '/outside/a.mp3', 'http://example.com/a.mp3', 'https://example.com/" onerror="x', 'https://soundcloud.com/a/b'];
+  const app = client(html, JSON.stringify({ ...data, posts: [{ title: '<script>Bad</script>', audio_tracks: [
+    ...invalid.map(audio => ({ title: 'Unsafe', audio })),
+    { title: '<img src=x onerror=alert(1)>', audio: '/uploads/valid.mp3' },
+    { audio: 'https://media.example.com/sample.wav' },
+  ] }] }));
+  const buttons = blogButtons(app);
+  assert.equal(buttons.length, 2);
+  assert.doesNotMatch(app.get('posts-container').children[0].innerHTML, /<script>|<img src=x/);
+  assert.ok(buttons[0].innerHTML.includes('&lt;img'));
+  buttons[0].listeners.click(); assert.equal(app.get('featured-audio').src, '/uploads/valid.mp3');
+  buttons[1].listeners.click(); assert.equal(app.get('featured-audio').src, 'https://media.example.com/sample.wav');
+  assert.match(buttons[1].attributes['aria-label'], /Аудиозапись/);
 });

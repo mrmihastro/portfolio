@@ -19,7 +19,19 @@ async function readObject(path) {
 // Reuse committed peaks only for matching audio bytes. New/replaced CMS uploads
 // are decoded automatically at ordinary build time with the pinned npm binary.
 // Generated data is embedded in HTML, never written back into source content.
-async function verifiedWaveforms(source, projects) {
+function audioSources(projects, posts) {
+  const urls = projects.map(project => project.audio || project.audio_url || project.media_url || project.track || '');
+  for (const post of posts) {
+    if (post.media_type === 'audio') urls.push(post.media_url);
+    if (!Array.isArray(post.audio_tracks)) continue;
+    for (const track of post.audio_tracks) {
+      if (track && typeof track === 'object' && !Array.isArray(track) && typeof track.audio === 'string') urls.push(track.audio);
+    }
+  }
+  return urls;
+}
+
+async function verifiedWaveforms(source, urls) {
   let records = {};
   try { records = await readObject(join(source, 'settings/waveforms.json')); }
   catch { /* Cache is optional; decode current local uploads instead. */ }
@@ -29,8 +41,7 @@ async function verifiedWaveforms(source, projects) {
   let realUploadRoot;
   try { realUploadRoot = (await realpath(resolve(source, 'uploads'))) + sep; }
   catch { return verified; }
-  for (const project of projects) {
-    const url = project.audio || project.audio_url || project.media_url || project.track || '';
+  for (const url of urls) {
     if (typeof url !== 'string' || !url.startsWith('/uploads/') || attempted.has(url)) continue;
     const path = resolve(source, url.slice(1));
     if (!path.startsWith(uploadRoot)) continue;
@@ -80,7 +91,7 @@ export async function build(source = root, output = join(source, 'dist')) {
     posts: await collection('posts'),
     sounds: (await readObject(join(source, 'settings/sounds.json'))).items,
   };
-  content.waveforms = await verifiedWaveforms(source, content.projects);
+  content.waveforms = await verifiedWaveforms(source, audioSources(content.projects, content.posts));
   if (!Array.isArray(content.sounds) || content.sounds.some(sound => !sound.title || typeof sound.url !== 'string' || !/^https:\/\/drive\.google\.com\/drive\/folders\/[A-Za-z0-9_-]+(?:[?#].*)?$/.test(sound.url))) {
     throw new Error('Invalid portfolio folder links');
   }

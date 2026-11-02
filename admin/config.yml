@@ -77,3 +77,13 @@ collections:
         options: ["none", "musescore", "youtube", "audio", "image"]
         default: "none"
       - { label: "Медиафайл или Ссылка (MuseScore/YouTube/MP3)", name: "media_url", widget: "string", required: false }
+      - label: "Аудиозаписи"
+        name: "audio_tracks"
+        widget: "list"
+        required: false
+        collapsed: true
+        summary: "{{fields.title}}"
+        hint: "Добавляйте любое количество записей. Порядок меняется перетаскиванием элементов."
+        fields:
+          - { label: "Название записи", name: "title", widget: "string" }
+          - { label: "Аудиофайл", name: "audio", widget: "file" }
