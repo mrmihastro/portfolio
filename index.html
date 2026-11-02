@@ -162,6 +162,7 @@
     .player-open { padding-bottom:210px; }
     @media(max-width:900px) { .dock-volume { display:none; } }
     @media(max-width:650px) { .dock-inner { min-height:150px;padding:15px 20px calc(13px + env(safe-area-inset-bottom));gap:10px; } .dock-top { gap:12px; } .main-play { width:42px;height:42px;min-width:42px; } .dock-tools { gap:0; } .dock-tools .icon-button { min-width:30px;width:30px;font-size:22px; } .dock-close { margin-left:2px; } .dock-label { font-size:.64rem; } #featured-title { font-size:.8rem;line-height:1.3; } .waveform-track { height:55px; } .player-open { padding-bottom:230px; } }
+    .main-play { display:grid;place-items:center; } .main-play svg { width:20px;height:20px;display:block;fill:currentColor;pointer-events:none; }
   </style>
 </head>
 <body id="page-body">
@@ -289,7 +290,7 @@
     <audio id="featured-audio" preload="none" hidden></audio>
     <div class="dock-inner">
       <div class="dock-top">
-        <button id="player-toggle" type="button" class="icon-button main-play" aria-label="Воспроизвести">▶</button>
+        <button id="player-toggle" type="button" class="icon-button main-play" aria-label="Воспроизвести"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 5v14l11-7z"/></svg></button>
         <div class="dock-track"><span id="player-artist" class="dock-label">Михаил Тарбагаев</span><h3 id="featured-title">Выберите музыку</h3><p id="featured-status" role="status" aria-live="polite"></p></div>
         <div class="dock-tools"><button id="prev-track" type="button" class="icon-button" aria-label="Предыдущая композиция">‹</button><button id="next-track" type="button" class="icon-button" aria-label="Следующая композиция">›</button><label class="dock-volume"><span>Громкость</span><input id="player-volume" type="range" min="0" max="1" step="0.01" value="1" aria-label="Громкость"></label><button id="player-close" type="button" class="icon-button dock-close" aria-label="Закрыть плеер и остановить музыку">×</button></div>
       </div>
@@ -552,7 +553,11 @@
       base.innerHTML = svg; played.innerHTML = svg; played.style.clipPath = 'inset(0 100% 0 0)';
       wrapper.classList.remove('no-waveform');
     }
-    function updateToggle() { toggle.textContent = featuredAudio.paused ? '▶' : 'Ⅱ'; toggle.setAttribute('aria-label', featuredAudio.paused ? 'Воспроизвести' : 'Приостановить'); }
+    function updateToggle() {
+      const shape = featuredAudio.paused ? '<path d="M8 5v14l11-7z"/>' : '<rect x="6" y="5" width="4" height="14" rx=".6"/><rect x="14" y="5" width="4" height="14" rx=".6"/>';
+      toggle.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${shape}</svg>`;
+      toggle.setAttribute('aria-label', featuredAudio.paused ? 'Воспроизвести' : 'Приостановить');
+    }
     toggle.addEventListener('click', () => { if (featuredAudio.paused) selectTrack(activeTrack, true); else featuredAudio.pause(); });
     seek.addEventListener('input', () => { if (Number.isFinite(featuredAudio.duration) && featuredAudio.duration > 0) { featuredAudio.currentTime = Number(seek.value) / 100 * featuredAudio.duration; updateProgress(); } });
     document.getElementById('player-volume').addEventListener('input', event => { featuredAudio.volume = Math.min(1, Math.max(0, Number(event.target.value))); });
@@ -597,8 +602,11 @@
       const anchor = event.target.closest && event.target.closest('a[href^="#"]');
       if (anchor && ['#portfolio-start','#sound-design','#publications','#contact-section'].includes(anchor.getAttribute('href'))) {
         const listening = anchor.getAttribute('href') === '#portfolio-start';
-        if (listening && (!contentRevealed || revealInProgress)) { if (event.preventDefault) event.preventDefault(); revealContent(); }
-        else revealContent(false);
+        if (listening) {
+          if (event.preventDefault) event.preventDefault();
+          if (!contentRevealed || revealInProgress) revealContent();
+          else portfolioMain.scrollIntoView({ behavior:reducedMotion() ? 'auto' : 'smooth', block:'start' });
+        } else revealContent(false);
       }
       const button = event.target.closest && event.target.closest('[data-play-url]');
       if (!button) return;
@@ -744,7 +752,6 @@
       portfolioMain.hidden = false;
       introArrow.classList.add('dismissed'); introArrow.disabled = true;
       introArrow.setAttribute('aria-hidden', 'true'); introArrow.setAttribute('tabindex', '-1');
-      if (window.history && window.history.replaceState) window.history.replaceState({ ...(window.history.state || {}), portfolioRevealed:true }, '');
       const start = introSpacer.getBoundingClientRect().height;
       const topStart = introTopSpacer.getBoundingClientRect().height;
       if (!animate || reducedMotion() || !introSpacer.animate || !introTopSpacer.animate || (start <= compactGap && topStart <= 0)) { finishReveal(); return; }
@@ -768,9 +775,23 @@
     function introControl(target) {
       return target && target.closest && target.closest('input, textarea, select, button, audio, video, [contenteditable="true"], [role="slider"]');
     }
-    function restoreContent() {
-      const hash = window.location && window.location.hash;
-      if ((hash && hash !== '#hero-section') || window.scrollY > 0 || (window.history && window.history.state && window.history.state.portfolioRevealed)) revealContent(false);
+    const sectionHashes = ['#portfolio-start','#sound-design','#publications','#contact-section'];
+    function explicitSectionHash() { return window.location && sectionHashes.includes(window.location.hash); }
+    function restoreContent() { if (explicitSectionHash()) revealContent(false); }
+    function resetRootPosition() {
+      if (contentRevealed || explicitSectionHash()) return;
+      if (window.history) window.history.scrollRestoration = 'manual';
+      if (window.scrollTo) window.scrollTo({ top:0, left:0, behavior:'instant' });
+    }
+    // Old deployments persisted a reveal flag, which incorrectly bypassed intro on reload.
+    // Remove that legacy marker only; never persist revealed state in browser history again.
+    if (window.history && window.history.state && Object.prototype.hasOwnProperty.call(window.history.state, 'portfolioRevealed')) {
+      const cleanState = { ...window.history.state }; delete cleanState.portfolioRevealed;
+      const legacyListenHash = window.location && window.location.hash === '#portfolio-start';
+      if (window.history.replaceState) {
+        if (legacyListenHash) window.history.replaceState(cleanState, '', (window.location.pathname || '/') + (window.location.search || ''));
+        else window.history.replaceState(cleanState, '');
+      }
     }
     function sizeIntroSpacer() {
       if (contentRevealed) return;
@@ -788,7 +809,7 @@
     portfolioMain.hidden = true;
     introHero.classList.add('intro-layout');
     introArrow.hidden = false;
-    sizeIntroSpacer(); restoreContent();
+    resetRootPosition(); sizeIntroSpacer(); restoreContent();
     introArrow.addEventListener('click', () => {
       if (contentRevealed) return;
       revealContent();
@@ -823,7 +844,12 @@
     window.addEventListener('pagehide', () => { if (revealInProgress) finishReveal(); });
     window.addEventListener('hashchange', restoreContent);
     window.addEventListener('popstate', restoreContent);
-    window.addEventListener('pageshow', restoreContent);
+    window.addEventListener('pageshow', event => {
+      // A first pageshow can arrive after a user already started revealing: never cancel it.
+      // BFCache restores this live document itself, not a durable history flag.
+      if ((event && event.persisted) || contentRevealed) return;
+      resetRootPosition(); sizeIntroSpacer(); restoreContent();
+    });
 
     if (window.netlifyIdentity) {
       window.netlifyIdentity.on("init", user => {

@@ -66,7 +66,7 @@ export function client(html, payload, fetchImpl = async () => { throw new Error(
   const media = [];
   const documentListeners = {};
   const windowListeners = {};
-  const browserWindow = { innerHeight: options.innerHeight ?? 800, scrollY: options.scrollY || 0, location: { hash: options.hash || '' }, history: { state: options.historyState || null, calls: 0, replaceState(state) { this.state = state; this.calls++; } }, addEventListener(event, callback) { windowListeners[event] = callback; }, removeEventListener(event) { delete windowListeners[event]; }, requestAnimationFrame(fn) { fn(); }, matchMedia() { return { matches: !!options.reducedMotion }; } };
+  const browserWindow = { innerHeight: options.innerHeight ?? 800, scrollY: options.scrollY || 0, location: { hash: options.hash || '', pathname: '/', search: options.search || '' }, history: { state: options.historyState || null, calls: 0, replaceState(state, title, url) { this.state = state; this.calls++; if (url !== undefined) { this.lastURL = url; browserWindow.location.hash = url.includes('#') ? '#' + url.split('#')[1] : ''; } } }, scrollCalls: [], scrollTo(value) { this.scrollCalls.push(value); this.scrollY = value.top; }, addEventListener(event, callback) { windowListeners[event] = callback; }, removeEventListener(event) { delete windowListeners[event]; }, requestAnimationFrame(fn) { fn(); }, matchMedia() { return { matches: !!options.reducedMotion }; } };
   const addMedia = (tagName = 'AUDIO') => { const element = new Element(); element.tagName = tagName; media.push(element); return element; };
   get('site-content').textContent = payload;
   const requests = [];
@@ -433,10 +433,10 @@ test('intro starts hero-only via JS but leaves main visible in no-JS markup', as
   assert.equal(app.get('intro-arrow').disabled, true);
   assert.equal(app.get('intro-arrow').attributes['aria-hidden'], 'true');
   assert.equal(app.get('intro-arrow').attributes.tabindex, '-1');
-  assert.equal(app.browserWindow.history.state.portfolioRevealed, true);
+  assert.equal(app.browserWindow.history.state?.portfolioRevealed, undefined);
   app.windowListeners.wheel({ deltaY: 120 });
   app.windowListeners.keydown({ key: 'PageDown' });
-  assert.equal(app.browserWindow.history.calls, 1);
+  assert.equal(app.browserWindow.history.calls, 0);
   assert.equal(app.get('portfolio-start').scrollCount, undefined);
 });
 
@@ -450,7 +450,7 @@ test('downward scrolling and keys reveal once without hijacking form, media or m
     assert.equal(app.get('portfolio-start').hidden, true);
     app.windowListeners.keydown({ key });
     assert.equal(app.get('portfolio-start').hidden, false);
-    assert.equal(app.browserWindow.history.calls, 1);
+    assert.equal(app.browserWindow.history.calls, 0);
   }
   const app = client(html, JSON.stringify(data));
   for (const event of [{ deltaY: -10 }, { deltaY: 10, target: { closest: () => ({}) } }, { deltaY: 10, ctrlKey: true }, { deltaY: 10, metaKey: true }]) {
@@ -485,24 +485,29 @@ test('touch reveal requires a single-finger upward gesture and respects cancella
   assert.equal(app.get('portfolio-start').hidden, false);
 });
 
-test('deep links, restored scroll and history reveal content without replaying intro', async t => {
+test('only known explicit section hashes bypass intro, not unknown hashes or restored scroll', async t => {
   const { data, html } = await built(t);
-  for (const options of [{ hash: '#contact-section' }, { scrollY: 120 }, { historyState: { portfolioRevealed: true, keep: 123 } }]) {
-    const app = client(html, JSON.stringify(data), undefined, options);
+  for (const hash of ['#portfolio-start', '#sound-design', '#publications', '#contact-section']) {
+    const app = client(html, JSON.stringify(data), undefined, { hash });
     assert.equal(app.get('portfolio-start').hidden, false);
-    assert.equal(app.browserWindow.history.calls, 1);
-    if (options.historyState) assert.equal(app.browserWindow.history.state.keep, 123);
+    assert.equal(app.animations.length, 0);
+    assert.equal(app.browserWindow.history.calls, 0);
+  }
+  for (const hash of ['', '#hero-section', '#unknown']) {
+    const app = client(html, JSON.stringify(data), undefined, { hash, scrollY: 120 });
+    assert.equal(app.get('portfolio-start').hidden, true);
+    assert.equal(app.browserWindow.scrollY, 0);
+    assert.equal(app.browserWindow.history.scrollRestoration, 'manual');
   }
   for (const event of ['hashchange', 'popstate', 'pageshow']) {
-    const app = client(html, JSON.stringify(data), undefined, { hash: '#hero-section' });
-    assert.equal(app.get('portfolio-start').hidden, true);
+    const app = client(html, JSON.stringify(data));
     app.browserWindow.location.hash = '#contact-section';
     app.windowListeners[event]();
     assert.equal(app.get('portfolio-start').hidden, false);
     app.browserWindow.location.hash = '#hero-section';
     app.windowListeners[event]();
     assert.equal(app.get('portfolio-start').hidden, false);
-    assert.equal(app.browserWindow.history.calls, 1);
+    assert.equal(app.browserWindow.history.calls, 0);
   }
 });
 
@@ -563,7 +568,7 @@ test('paired spacers center hero initially and move it upward with synchronized 
   assert.equal(prevented, 3);
   assert.deepEqual([...hero.classes], before);
   assert.equal(main.scrolled, undefined);
-  assert.equal(app.browserWindow.history.calls, 1);
+  assert.equal(app.browserWindow.history.calls, 0);
   assert.equal(app.animations.length, 2);
   assert.doesNotMatch(html, /introHero\.classList\.remove/);
 });
@@ -585,7 +590,7 @@ test('arrow reveals without scrollIntoView and reduced-motion or unsupported ani
     }
     app.get('intro-arrow').listeners.click();
     assert.equal(app.get('portfolio-start').scrollCount, undefined);
-    assert.equal(app.browserWindow.history.calls, 1);
+    assert.equal(app.browserWindow.history.calls, 0);
   }
 });
 
@@ -606,7 +611,7 @@ test('spacer resizes before reveal only and restored navigation ends in-flight a
   assert.equal(app.animations[0].cancelled, true);
   await app.finishAnimations();
   assert.equal(app.get('intro-spacer').style.height, '32px');
-  const restored = client(html, JSON.stringify(data), undefined, { historyState: { portfolioRevealed: true } });
+  const restored = client(html, JSON.stringify(data), undefined, { hash: '#contact-section' });
   assert.equal(restored.animations.length, 0);
   assert.equal(restored.get('intro-spacer').style.height, '32px');
 });
@@ -694,7 +699,7 @@ test('bottom player identifies artist and contains no artwork or social buttons'
   assert.ok(dock.includes('id="player-duration"'));
 });
 
-test('first Listen anchor reveals without hash scrolling, then behaves normally after transition', async t => {
+test('Listen reveals without persisting hash and later scrolls deliberately after transition', async t => {
   const { data, html } = await built(t);
   const app = client(html, JSON.stringify(data));
   let prevented = 0;
@@ -708,8 +713,10 @@ test('first Listen anchor reveals without hash scrolling, then behaves normally 
   assert.equal(app.animations.length, 2);
   await app.finishAnimations();
   app.documentListeners.click(event);
-  assert.equal(prevented, 2);
-  assert.equal(app.get('portfolio-start').scrolled, undefined);
+  assert.equal(prevented, 3);
+  assert.equal(app.get('portfolio-start').scrolled, true);
+  assert.equal(app.get('portfolio-start').scrollOptions.behavior, 'smooth');
+  assert.equal(app.browserWindow.location.hash, '');
 });
 
 test('tall mobile hero clamps top spacing to zero while a fitting card centers after resize', async t => {
@@ -745,4 +752,73 @@ test('paired reveal waits for both animations and works without a document timel
   assert.ok(app.animations.every(animation => animation.cancelled));
   assert.equal(app.get('intro-top-spacer').style.height, '0px');
   assert.equal(app.get('intro-spacer').style.height, '32px');
+});
+
+test('root reload clears legacy reveal flag without losing unrelated history and resets stale scroll', async t => {
+  const { data, html } = await built(t);
+  const app = client(html, JSON.stringify(data), undefined, { historyState: { portfolioRevealed: true, keep: 123 }, scrollY: 800 });
+  assert.equal(app.get('portfolio-start').hidden, true);
+  assert.equal(app.browserWindow.history.state.portfolioRevealed, undefined);
+  assert.equal(app.browserWindow.history.state.keep, 123);
+  assert.equal(app.browserWindow.history.calls, 1);
+  assert.equal(app.browserWindow.scrollY, 0);
+  assert.equal(app.browserWindow.scrollCalls[0].behavior, 'instant');
+  app.browserWindow.scrollY = 500;
+  app.windowListeners.pageshow({ persisted: false });
+  assert.equal(app.browserWindow.scrollY, 0);
+  assert.equal(app.get('portfolio-start').hidden, true);
+  assert.equal(app.get('intro-top-spacer').style.height, '100px');
+  app.get('intro-arrow').listeners.click();
+  await app.finishAnimations();
+  assert.equal(app.browserWindow.history.calls, 1);
+  assert.equal(app.browserWindow.history.state.portfolioRevealed, undefined);
+});
+
+test('legacy Listen hash is cleaned only alongside legacy marker and preserves query', async t => {
+  const { data, html } = await built(t);
+  const app = client(html, JSON.stringify(data), undefined, { hash: '#portfolio-start', search: '?ref=test', historyState: { portfolioRevealed: true, keep: 7 } });
+  assert.equal(app.browserWindow.location.hash, '');
+  assert.equal(app.browserWindow.history.lastURL, '/?ref=test');
+  assert.equal(app.browserWindow.history.state.keep, 7);
+  assert.equal(app.get('portfolio-start').hidden, true);
+  const explicit = client(html, JSON.stringify(data), undefined, { hash: '#portfolio-start' });
+  assert.equal(explicit.browserWindow.location.hash, '#portfolio-start');
+  assert.equal(explicit.get('portfolio-start').hidden, false);
+  assert.equal(explicit.browserWindow.history.calls, 0);
+});
+
+test('late first pageshow cannot finish in-flight reveal and BFCache preserves live state', async t => {
+  const { data, html } = await built(t);
+  const app = client(html, JSON.stringify(data));
+  app.get('intro-arrow').listeners.click();
+  const scrollCalls = app.browserWindow.scrollCalls.length;
+  app.windowListeners.pageshow({ persisted: false });
+  assert.ok(app.animations.every(animation => !animation.cancelled));
+  assert.equal(app.get('intro-top-spacer').style.height, '100px');
+  assert.equal(app.browserWindow.scrollCalls.length, scrollCalls);
+  await app.finishAnimations();
+  app.browserWindow.scrollY = 350;
+  app.windowListeners.pageshow({ persisted: true });
+  assert.equal(app.browserWindow.scrollY, 350);
+  assert.equal(app.get('portfolio-start').hidden, false);
+  assert.equal(app.get('intro-top-spacer').style.height, '0px');
+  const closed = client(html, JSON.stringify(data));
+  closed.windowListeners.pageshow({ persisted: true });
+  assert.equal(closed.get('portfolio-start').hidden, true);
+  assert.equal(closed.animations.length, 0);
+});
+
+test('player toggle uses scalable play and pause SVG while preserving accessible labels', async t => {
+  const { data, html } = await built(t);
+  const app = client(html, JSON.stringify(data));
+  const toggle = app.get('player-toggle');
+  app.get('selected-container').children[0].listeners.click();
+  assert.equal(toggle.attributes['aria-label'], 'Приостановить');
+  assert.match(toggle.innerHTML, /<svg\b/);
+  assert.equal((toggle.innerHTML.match(/<rect\b/g) || []).length, 2);
+  toggle.listeners.click();
+  assert.equal(toggle.attributes['aria-label'], 'Воспроизвести');
+  assert.match(toggle.innerHTML, /<svg\b/);
+  assert.match(toggle.innerHTML, /<path\b/);
+  assert.doesNotMatch(toggle.innerHTML, /▶|Ⅱ/);
 });
