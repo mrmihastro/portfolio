@@ -818,22 +818,21 @@
     function stopGesture(event) { if (event.cancelable !== false && event.preventDefault) event.preventDefault(); }
     window.addEventListener('wheel', event => {
       if (event.ctrlKey || event.metaKey || introControl(event.target)) return;
-      if (revealInProgress) { stopGesture(event); return; }
       if (!contentRevealed && event.deltaY > 0) { stopGesture(event); revealContent(); }
     }, { passive:false });
     window.addEventListener('keydown', event => {
       if (event.ctrlKey || event.metaKey || event.altKey || introControl(event.target)) return;
       if (['ArrowDown','PageDown','End',' '].includes(event.key)) {
-        if (revealInProgress) stopGesture(event);
-        else if (!contentRevealed) { stopGesture(event); revealContent(); }
+        if (!contentRevealed) { stopGesture(event); revealContent(); }
       }
     });
     window.addEventListener('touchstart', event => { touchStartY = !introControl(event.target) && event.touches && event.touches.length === 1 ? event.touches[0].clientY : null; }, { passive:true });
     window.addEventListener('touchmove', event => {
       if (introControl(event.target) || touchStartY === null || !event.touches || event.touches.length !== 1) return;
-      if (revealInProgress) stopGesture(event);
-      else if (!contentRevealed && touchStartY - event.touches[0].clientY > 30) { stopGesture(event); revealContent(); }
-    }, { passive:false });
+      // Do not cancel a touchmove: cancelling its first event can suppress the
+      // browser's native pan for the entire swipe, even if later events are allowed.
+      if (!contentRevealed && touchStartY - event.touches[0].clientY > 30) revealContent();
+    }, { passive:true });
     window.addEventListener('touchend', event => {
       if (!contentRevealed && touchStartY !== null && event.changedTouches && event.changedTouches[0] && touchStartY - event.changedTouches[0].clientY > 30) revealContent();
       touchStartY = null;
