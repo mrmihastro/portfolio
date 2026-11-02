@@ -552,7 +552,7 @@ test('paired spacers center hero initially and move it upward with synchronized 
   assert.equal(app.get('page-body').style.overflowAnchor, 'none');
   app.windowListeners.wheel({ deltaY: 300, preventDefault() { prevented++; } });
   app.windowListeners.keydown({ key: 'PageDown', preventDefault() { prevented++; } });
-  assert.equal(prevented, 3);
+  assert.equal(prevented, 1);
   assert.equal(app.animations.length, 2);
   await app.finishAnimations();
   assert.equal(spacer.style.height, '32px');
@@ -565,7 +565,7 @@ test('paired spacers center hero initially and move it upward with synchronized 
   app.windowListeners.wheel({ deltaY: 120, preventDefault() { prevented++; } });
   app.windowListeners.keydown({ key: 'PageDown', preventDefault() { prevented++; } });
   app.get('intro-arrow').listeners.click();
-  assert.equal(prevented, 3);
+  assert.equal(prevented, 1);
   assert.deepEqual([...hero.classes], before);
   assert.equal(main.scrolled, undefined);
   assert.equal(app.browserWindow.history.calls, 0);
@@ -616,21 +616,21 @@ test('spacer resizes before reveal only and restored navigation ends in-flight a
   assert.equal(restored.get('intro-spacer').style.height, '32px');
 });
 
-test('touchmove prevents only reveal transition and pagehide safely finishes it', async t => {
+test('touchmove reveals without cancelling native swipe and pagehide safely finishes it', async t => {
   const { data, html } = await built(t);
   const app = client(html, JSON.stringify(data));
   let prevented = 0;
   app.windowListeners.touchstart({ touches: [{ clientY: 300 }] });
   app.windowListeners.touchmove({ touches: [{ clientY: 250 }], preventDefault() { prevented++; } });
-  assert.equal(prevented, 1);
+  assert.equal(prevented, 0);
   assert.equal(app.animations.length, 2);
   app.windowListeners.touchmove({ touches: [{ clientY: 220 }], preventDefault() { prevented++; } });
-  assert.equal(prevented, 2);
+  assert.equal(prevented, 0);
   app.windowListeners.pagehide();
   assert.equal(app.get('intro-spacer').style.height, '32px');
   assert.equal(app.animations[0].cancelled, true);
   app.windowListeners.touchmove({ touches: [{ clientY: 180 }], preventDefault() { prevented++; } });
-  assert.equal(prevented, 2);
+  assert.equal(prevented, 0);
 });
 
 test('waveform SVG renders verified sample peaks and progress follows accessible native seek', async t => {
@@ -821,4 +821,28 @@ test('player toggle uses scalable play and pause SVG while preserving accessible
   assert.match(toggle.innerHTML, /<svg\b/);
   assert.match(toggle.innerHTML, /<path\b/);
   assert.doesNotMatch(toggle.innerHTML, /▶|Ⅱ/);
+});
+
+
+test('scroll inputs stay native immediately after the triggering gesture while reveal is unfinished', async t => {
+  const { data, html } = await built(t);
+  for (const trigger of ['wheel','keydown']) {
+    const app = client(html, JSON.stringify(data));
+    const event = extra => ({ defaultPrevented:false, preventDefault() { this.defaultPrevented = true; }, ...extra });
+    const first = event(trigger === 'wheel' ? { deltaY:120 } : { key:'PageDown' });
+    app.windowListeners[trigger](first);
+    assert.equal(first.defaultPrevented, true);
+    assert.equal(app.animations.length, 2);
+    const initialScrollCalls = app.browserWindow.scrollCalls.length;
+    for (const [kind, extra] of [['wheel',{deltaY:250}],['wheel',{deltaY:-120}],['keydown',{key:'PageDown',repeat:true}],['keydown',{key:'ArrowDown',repeat:true}]]) {
+      const subsequent = event(extra); app.windowListeners[kind](subsequent);
+      assert.equal(subsequent.defaultPrevented, false);
+    }
+    app.windowListeners.touchstart({touches:[{clientY:300}]});
+    const swipe = event({touches:[{clientY:200}]}); app.windowListeners.touchmove(swipe);
+    assert.equal(swipe.defaultPrevented, false);
+    assert.equal(app.animations.length, 2);
+    assert.equal(app.animations.some(animation => animation.cancelled), false);
+    assert.equal(app.browserWindow.scrollCalls.length, initialScrollCalls);
+  }
 });
